@@ -7,14 +7,14 @@ import { payloadGenerator } from "../payloadGenerator";
 import type imageEnhancePlugin from "../main";
 import type { Image } from "../types";
 import type { Response, Uploader } from "./types";
-import type { PluginSettings } from "../setting";
+import type { PluginSettings, UploadedImage } from "../setting";
 
 interface PicGoResponse {
   success?: boolean;
   message?: string;
   msg?: string;
   result: string[] | string;
-  fullResult?: Record<string, any>[];
+  fullResult?: UploadedImage[];
 }
 
 export default class PicGoUploader implements Uploader {
@@ -30,24 +30,27 @@ export default class PicGoUploader implements Uploader {
     let response: Awaited<ReturnType<typeof requestUrl>>;
 
     if (this.settings.remoteServerMode) {
-      const files = [];
+      const files: File[] = [];
       for (let i = 0; i < fileList.length; i++) {
         if (typeof fileList[i] === "string") {
-          const { readFile } = require("fs");
+          // Dynamic import for Electron environment
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          const fs = require("fs") as { readFile: (path: string, callback: (err: NodeJS.ErrnoException | null, data: Buffer) => void) => void };
           const file = fileList[i] as string;
 
           const buffer: Buffer = await new Promise((resolve, reject) => {
-            readFile(file, (err: any, data: any) => {
+            fs.readFile(file, (err, data) => {
               if (err) {
                 reject(err);
+              } else {
+                resolve(data);
               }
-              resolve(data);
             });
           });
           const arrayBuffer = bufferToArrayBuffer(buffer);
           files.push(new File([arrayBuffer], file));
         } else {
-          const timestamp = new Date().getTime();
+          const timestamp = Date.now();
           const image = fileList[i] as Image;
 
           if (!image.file) continue;
@@ -112,17 +115,19 @@ export default class PicGoUploader implements Uploader {
     return response;
   }
 
-  private async uploadFileByClipboard(fileList?: FileList): Promise<any> {
+  private async uploadFileByClipboard(fileList?: FileList): Promise<Response> {
     let res: Awaited<ReturnType<typeof requestUrl>>;
 
     if (this.settings.remoteServerMode) {
-      const files = [];
-      for (let i = 0; i < fileList.length; i++) {
-        const timestamp = new Date().getTime();
+      const files: File[] = [];
+      if (fileList) {
+        for (let i = 0; i < fileList.length; i++) {
+          const timestamp = Date.now();
 
-        const file = fileList[i];
-        const arrayBuffer = await file.arrayBuffer();
-        files.push(new File([arrayBuffer], timestamp + ".png"));
+          const file = fileList[i];
+          const arrayBuffer = await file.arrayBuffer();
+          files.push(new File([arrayBuffer], timestamp + ".png"));
+        }
       }
       res = await this.uploadFileByData(files);
     } else {

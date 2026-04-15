@@ -41,7 +41,7 @@ export default class PicGoCoreUploader implements Uploader {
     const data = splitList.splice(splitListLength - 1 - length, length);
 
     if (res.includes("PicGo ERROR")) {
-      console.log(command, res);
+      console.error(command, res);
 
       return {
         success: false,
@@ -69,7 +69,7 @@ export default class PicGoCoreUploader implements Uploader {
         result: [lastImage],
       };
     } else {
-      console.log(splitList);
+      console.error(splitList);
 
       return {
         success: false,
@@ -92,42 +92,26 @@ export default class PicGoCoreUploader implements Uploader {
     return res;
   }
 
-  private async exec(command: string) {
-    const { exec } = require("child_process");
-    let { stdout } = await exec(command);
-    const res = await streamToString(stdout);
-    return res;
-  }
-
-  private async spawnChild() {
-    const { spawn } = require("child_process");
-    const child = spawn("picgo", ["upload"], {
-      shell: true,
+  private async exec(command: string): Promise<string> {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { exec } = require("child_process") as { exec: (cmd: string, callback: (error: Error | null, stdout: { [Symbol.asyncIterator](): AsyncIterator<Buffer> }) => void) => void };
+    return new Promise((resolve, reject) => {
+      exec(command, async (error, stdout) => {
+        if (error) {
+          reject(error);
+        } else {
+          const res = await streamToString(stdout);
+          resolve(res);
+        }
+      });
     });
-
-    let data = "";
-    for await (const chunk of child.stdout) {
-      data += chunk;
-    }
-    let error = "";
-    for await (const chunk of child.stderr) {
-      error += chunk;
-    }
-    const exitCode = await new Promise((resolve, reject) => {
-      child.on("close", resolve);
-    });
-
-    if (exitCode) {
-      throw new Error(`subprocess error exit ${exitCode}, ${error}`);
-    }
-    return data;
   }
 
   async upload(fileList: Array<Image> | Array<string>) {
     return this.uploadFiles(fileList);
   }
   async uploadByClipboard(fileList?: FileList) {
-    console.log("uploadByClipboard", fileList);
+    console.debug("uploadByClipboard", fileList);
     return this.uploadFileByClipboard();
   }
 }

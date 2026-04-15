@@ -29,7 +29,7 @@ export default class imageEnhancePlugin extends Plugin {
   picGoDeleter: PicGoDeleter;
 
   async loadSettings() {
-    this.settings = Object.assign(DEFAULT_SETTINGS, await this.loadData());
+    this.settings = { ...DEFAULT_SETTINGS, ...(await this.loadData()) };
   }
 
   async saveSettings() {
@@ -54,13 +54,13 @@ export default class imageEnhancePlugin extends Plugin {
     this.addSettingTab(new SettingTab(this.app, this));
 
     this.addCommand({
-      id: "Upload all images",
+      id: "upload-all-images",
       name: "Upload all images",
       checkCallback: (checking: boolean) => {
         let leaf = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (leaf) {
           if (!checking) {
-            this.uploadAllFile();
+            void this.uploadAllFile();
           }
           return true;
         }
@@ -68,20 +68,20 @@ export default class imageEnhancePlugin extends Plugin {
       },
     });
     this.addCommand({
-      id: "Upload all images in vault",
+      id: "upload-all-images-in-vault",
       name: "Upload all images in vault",
       callback: () => {
-        this.scanAndUploadAllImagesInVault();
+        void this.scanAndUploadAllImagesInVault();
       },
     });
     this.addCommand({
-      id: "Download all images",
+      id: "download-all-images",
       name: "Download all images",
       checkCallback: (checking: boolean) => {
         let leaf = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (leaf) {
           if (!checking) {
-            downloadAllImageFiles(this);
+            void downloadAllImageFiles(this);
           }
           return true;
         }
@@ -89,17 +89,17 @@ export default class imageEnhancePlugin extends Plugin {
       },
     });
     this.addCommand({
-      id: "Clean unused images",
+      id: "clean-unused-images",
       name: "Clean unused images",
       callback: () => {
-        this.cleanUnusedImages();
+        void this.cleanUnusedImages();
       },
     });
     this.addCommand({
-      id: "Delete broken image links",
+      id: "delete-broken-image-links",
       name: "Delete broken image links",
       callback: () => {
-        this.deleteBrokenImageLinks();
+        void this.deleteBrokenImageLinks();
       },
     });
     this.setupPasteHandler();
@@ -298,7 +298,7 @@ export default class imageEnhancePlugin extends Plugin {
   replaceImage(imageList: Image[], uploadUrlList: string[]) {
     let content = this.helper.getValue();
 
-    imageList.map(item => {
+    imageList.forEach(item => {
       const uploadImage = uploadUrlList.shift();
 
       let name = this.handleName(item.name);
@@ -308,7 +308,7 @@ export default class imageEnhancePlugin extends Plugin {
     this.helper.setValue(content);
 
     if (this.settings.deleteSource) {
-      imageList.map(image => {
+      imageList.forEach(image => {
         if (image.file && !image.path.startsWith("http")) {
           this.app.fileManager.trashFile(image.file);
         }
@@ -492,7 +492,6 @@ export default class imageEnhancePlugin extends Plugin {
 
     // 处理每个文件的图片上传
     let processedCount = 0;
-    let successCount = 0;
     let failedCount = 0;
 
     for (const { file: mdFile, images: imageList } of filesWithImages) {
@@ -510,7 +509,7 @@ export default class imageEnhancePlugin extends Plugin {
 
         // 更新文件内容
         let content = await this.app.vault.read(mdFile);
-        imageList.map(item => {
+        imageList.forEach(item => {
           const uploadImage = uploadUrlList.shift();
           let name = this.handleName(item.name);
           content = content.replaceAll(item.source, `![${name}](${uploadImage})`);
@@ -519,7 +518,7 @@ export default class imageEnhancePlugin extends Plugin {
 
         // 删除源文件
         if (this.settings.deleteSource) {
-          imageList.map(async image => {
+          imageList.forEach(image => {
             if (image.file && !image.path.startsWith("http")) {
               this.app.fileManager.trashFile(image.file);
             }
@@ -527,7 +526,6 @@ export default class imageEnhancePlugin extends Plugin {
         }
 
         processedCount++;
-        successCount++;
       } catch (error) {
         console.error(`Failed to process ${mdFile.name}:`, error);
         failedCount++;
@@ -651,7 +649,6 @@ export default class imageEnhancePlugin extends Plugin {
       let content = await this.app.vault.read(mdFile);
       const imageLinks = this.helper.getImageLink(content);
       let modifiedContent = content;
-      let brokenLinksInFile = 0;
 
       for (const image of imageLinks) {
         const imagePath = decodeURI(image.path);
@@ -688,7 +685,6 @@ export default class imageEnhancePlugin extends Plugin {
         // 如果文件不存在，删除这个图片链接
         if (!fileExists) {
           modifiedContent = modifiedContent.replace(image.source, "");
-          brokenLinksInFile++;
           totalBrokenLinks++;
         }
       }
@@ -806,7 +802,7 @@ export default class imageEnhancePlugin extends Plugin {
 
             if (data.success) {
               data.result.map((value: string) => {
-                let pasteId = (Math.random() + 1).toString(36).substr(2, 5);
+                let pasteId = (Math.random() + 1).toString(36).substring(2, 7);
                 this.insertTemporaryText(editor, pasteId);
                 this.embedMarkDownImage(editor, pasteId, value, files[0].name);
               });
@@ -820,14 +816,13 @@ export default class imageEnhancePlugin extends Plugin {
   }
 
   canUpload(clipboardData: DataTransfer) {
-    this.settings.applyImage;
     const files = clipboardData.files;
     const text = clipboardData.getData("text");
 
     const hasImageFile =
       files.length !== 0 && files[0].type.startsWith("image");
     if (hasImageFile) {
-      if (!!text) {
+      if (text.length > 0) {
         return this.settings.applyImage;
       } else {
         return true;
@@ -839,7 +834,7 @@ export default class imageEnhancePlugin extends Plugin {
 
   async uploadFileAndEmbedImgurImage(
     editor: Editor,
-    callback: Function,
+    callback: (editor: Editor, pasteId: string) => Promise<string>,
     clipboardData: DataTransfer
   ) {
     let pasteId = (Math.random() + 1).toString(36).substr(2, 5);
@@ -866,7 +861,7 @@ export default class imageEnhancePlugin extends Plugin {
   embedMarkDownImage(
     editor: Editor,
     pasteId: string,
-    imageUrl: any,
+    imageUrl: string,
     name: string = ""
   ) {
     let progressText = imageEnhancePlugin.progressTextFor(pasteId);
@@ -881,8 +876,9 @@ export default class imageEnhancePlugin extends Plugin {
     );
   }
 
-  handleFailedUpload(editor: Editor, pasteId: string, reason: any) {
-    new Notice(reason);
+  handleFailedUpload(editor: Editor, pasteId: string, reason: string | Error) {
+    const message = typeof reason === "string" ? reason : reason.message;
+    new Notice(message);
     console.error("Failed request: ", reason);
     let progressText = imageEnhancePlugin.progressTextFor(pasteId);
     imageEnhancePlugin.replaceFirstOccurrence(

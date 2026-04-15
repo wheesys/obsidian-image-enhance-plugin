@@ -1,8 +1,23 @@
 import { extname } from "path-browserify";
-import { Readable } from "stream";
 
 export interface IStringKeyMap<T> {
   [key: string]: T;
+}
+
+// Type for Node.js Readable stream (used in Electron environment)
+interface ReadableStream {
+  [Symbol.asyncIterator](): AsyncIterator<Buffer>;
+}
+
+export async function streamToString(stream: ReadableStream): Promise<string> {
+  const chunks: Buffer[] = [];
+
+  for await (const chunk of stream) {
+    chunks.push(Buffer.from(chunk));
+  }
+
+  // @ts-ignore - Buffer.concat is available in Node.js/Electron environment
+  return Buffer.concat(chunks).toString("utf-8");
 }
 
 const IMAGE_EXT_LIST = [
@@ -17,26 +32,16 @@ const IMAGE_EXT_LIST = [
   ".avif",
 ];
 
-export function isAnImage(ext: string) {
+export function isAnImage(ext: string): boolean {
   return IMAGE_EXT_LIST.includes(ext.toLowerCase());
 }
-export function isAssetTypeAnImage(path: string): Boolean {
+
+export function isAssetTypeAnImage(path: string): boolean {
   return isAnImage(extname(path));
 }
 
-export async function streamToString(stream: Readable) {
-  const chunks = [];
-
-  for await (const chunk of stream) {
-    chunks.push(Buffer.from(chunk));
-  }
-
-  // @ts-ignore
-  return Buffer.concat(chunks).toString("utf-8");
-}
-
 export function getUrlAsset(url: string) {
-  return (url = url.substr(1 + url.lastIndexOf("/")).split("?")[0]).split(
+  return (url = url.substring(1 + url.lastIndexOf("/")).split("?")[0]).split(
     "#"
   )[0];
 }
@@ -53,17 +58,14 @@ export function getLastImage(list: string[]) {
   return lastImage;
 }
 
-interface AnyObj {
-  [key: string]: any;
-}
-
-export function arrayToObject<T extends AnyObj>(
+export function arrayToObject<T>(
   arr: T[],
   key: string
-): { [key: string]: T } {
-  const obj: { [key: string]: T } = {};
+): Record<string, T> {
+  const obj: Record<string, T> = {};
   arr.forEach(element => {
-    obj[element[key]] = element;
+    const keyValue = (element as Record<string, unknown>)[key] as string;
+    obj[keyValue] = element;
   });
   return obj;
 }

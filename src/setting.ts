@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting, Notice, Platform } from "obsidian";
+import { App, PluginSettingTab, Setting, Notice } from "obsidian";
 import imageEnhancePlugin from "./main";
 import { t } from "./lang/helpers";
 
@@ -15,7 +15,12 @@ export interface PluginSettings {
   deleteSource: boolean;
   imageDesc: "origin" | "none" | "removeDefault";
   remoteServerMode: boolean;
-  [propName: string]: any;
+  uploadedImages?: UploadedImage[];
+}
+
+export interface UploadedImage {
+  imgUrl: string;
+  [key: string]: string | number | boolean | null | undefined;
 }
 
 export const DEFAULT_SETTINGS: PluginSettings = {
@@ -45,7 +50,9 @@ export class SettingTab extends PluginSettingTab {
     let { containerEl } = this;
 
     containerEl.empty();
-    containerEl.createEl("h2", { text: t("Plugin Settings") });
+    new Setting(containerEl)
+      .setName(t("Plugin Settings"))
+      .setHeading();
     new Setting(containerEl)
       .setName(t("Auto pasted upload"))
       .setDesc(
