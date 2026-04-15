@@ -328,7 +328,7 @@ export default class imageEnhancePlugin extends Plugin {
 
     for (const match of fileArray) {
       const imageName = match.name;
-      const uri = decodeURI(match.path);
+      const uri = normalizePath(decodeURI(match.path));
 
       if (uri.startsWith("http")) {
         imageList.push({
@@ -429,7 +429,7 @@ export default class imageEnhancePlugin extends Plugin {
 
         for (const match of filteredImages) {
           const imageName = match.name;
-          const uri = decodeURI(match.path);
+          const uri = normalizePath(decodeURI(match.path));
 
           if (uri.startsWith("http")) {
             imageList.push({
@@ -570,18 +570,19 @@ export default class imageEnhancePlugin extends Plugin {
         // 尝试解析引用的图片文件
         const fileMap = arrayToObject(this.app.vault.getFiles(), "name");
         const filePathMap = arrayToObject(this.app.vault.getFiles(), "path");
-        const fileName = basename(imagePath);
+        const normalizedPath = normalizePath(decodeURI(imagePath));
+        const fileName = basename(normalizedPath);
         let referencedFile: TFile | undefined | null;
 
         // 优先匹配绝对路径
-        if (filePathMap[imagePath]) {
-          referencedFile = filePathMap[imagePath];
+        if (filePathMap[normalizedPath]) {
+          referencedFile = filePathMap[normalizedPath];
         }
 
         // 相对路径（包括不以 ./ 或 ../ 开头的相对路径）
         if (!referencedFile) {
           const filePath = normalizePath(
-            resolve(dirname(mdFile.path), imagePath)
+            resolve(dirname(mdFile.path), normalizedPath)
           );
           referencedFile = filePathMap[filePath];
         }
@@ -651,7 +652,7 @@ export default class imageEnhancePlugin extends Plugin {
       let modifiedContent = content;
 
       for (const image of imageLinks) {
-        const imagePath = decodeURI(image.path);
+        const imagePath = normalizePath(decodeURI(image.path));
 
         // 跳过网络图片
         if (imagePath.startsWith("http")) {
