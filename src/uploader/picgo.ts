@@ -73,7 +73,8 @@ export default class PicGoUploader implements Uploader {
         if (typeof item === "string") {
           return item;
         } else {
-          return normalizePath(join(basePath, item.path));
+          const imagePath = (item.file as any)?.fullPath || item.path;
+          return normalizePath(imagePath);
         }
       });
 

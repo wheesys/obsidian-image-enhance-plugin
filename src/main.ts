@@ -10,7 +10,7 @@ import {
   addIcon,
   MarkdownFileInfo,
 } from "obsidian";
-import { resolve, basename, dirname } from "path-browserify";
+import { resolve, basename, dirname, join } from "path-browserify";
 
 import { isAssetTypeAnImage, arrayToObject } from "./utils";
 import { downloadAllImageFiles } from "./download";
@@ -39,10 +39,17 @@ export default class imageEnhancePlugin extends Plugin {
   onunload() {}
 
   async onload() {
-    await this.loadSettings();
+    console.log("%c[ImageEnhance] Plugin loading... Version 1.0.3", "color: #00ff00; font-size: 16px; font-weight: bold;");
+    try {
+      await this.loadSettings();
+      console.log("[ImageEnhance] Settings loaded:", this.settings);
 
-    this.helper = new Helper(this.app);
-    this.picGoDeleter = new PicGoDeleter(this);
+      this.helper = new Helper(this.app);
+      this.picGoDeleter = new PicGoDeleter(this);
+      console.log("[ImageEnhance] Helper and Deleter created");
+    } catch (error) {
+      console.error("[ImageEnhance] Error during initialization:", error);
+    }
 
     addIcon(
       "upload",
@@ -53,20 +60,32 @@ export default class imageEnhancePlugin extends Plugin {
 
     this.addSettingTab(new SettingTab(this.app, this));
 
-    this.addCommand({
-      id: "upload-all-images",
-      name: "Upload all images",
-      checkCallback: (checking: boolean) => {
-        let leaf = this.app.workspace.getActiveViewOfType(MarkdownView);
-        if (leaf) {
-          if (!checking) {
-            void this.uploadAllFile();
+    console.log("[ImageEnhance] Registering commands...");
+    try {
+      this.addCommand({
+        id: "upload-all-images",
+        name: "Upload all images",
+        checkCallback: (checking: boolean) => {
+          console.log("[ImageEnhance] Upload all images command triggered, checking:", checking);
+          let leaf = this.app.workspace.getActiveViewOfType(MarkdownView);
+          console.log("[ImageEnhance] Current leaf:", leaf);
+          console.log("[ImageEnhance] Active leaves:", this.app.workspace.activeLeaf);
+          if (leaf) {
+            console.log("[ImageEnhance] Has MarkdownView, will execute");
+            if (!checking) {
+              console.log("[ImageEnhance] Executing uploadAllFile NOW");
+              this.uploadAllFile();
+            }
+            return true;
           }
-          return true;
-        }
-        return false;
-      },
-    });
+          console.log("[ImageEnhance] No MarkdownView found!");
+          return false;
+        },
+      });
+      console.log("[ImageEnhance] Command 'upload-all-images' registered");
+    } catch (error) {
+      console.error("[ImageEnhance] Error registering command:", error);
+    }
     this.addCommand({
       id: "upload-all-images-in-vault",
       name: "Upload all images in vault",
@@ -105,6 +124,7 @@ export default class imageEnhancePlugin extends Plugin {
     this.setupPasteHandler();
     this.registerFileMenu();
     this.registerSelection();
+    console.log("[ImageEnhance] All commands and handlers registered successfully");
   }
 
   /**
@@ -257,6 +277,7 @@ export default class imageEnhancePlugin extends Plugin {
   }
 
   filterFile(fileArray: Image[]) {
+    console.log("[ImageEnhance] filterFile called with", fileArray.length, "items");
     const imageList: Image[] = [];
 
     for (const match of fileArray) {
@@ -301,8 +322,10 @@ export default class imageEnhancePlugin extends Plugin {
     imageList.forEach(item => {
       const uploadImage = uploadUrlList.shift();
 
-      let name = this.handleName(item.name);
-      content = content.replaceAll(item.source, `![${name}](${uploadImage})`);
+      // 清理 name：去掉管道符后面的部分
+      let cleanName = item.name.split('|')[0].trim();
+      cleanName = this.handleName(cleanName);
+      content = content.replaceAll(item.source, `![${cleanName}](${uploadImage})`);
     });
 
     this.helper.setValue(content);
@@ -320,15 +343,25 @@ export default class imageEnhancePlugin extends Plugin {
    * 上传所有图片
    */
   uploadAllFile() {
+    console.log("[ImageEnhance] uploadAllFile called!");
     const activeFile = this.app.workspace.getActiveFile();
-    const fileMap = arrayToObject(this.app.vault.getFiles(), "name");
-    const filePathMap = arrayToObject(this.app.vault.getFiles(), "path");
+    console.log("[ImageEnhance] Current file:", activeFile?.path);
+
+    // 获取 vault 的基础路径
+    const adapter = this.app.vault.adapter;
+    const basePath = (adapter as any).getBasePath?.() || "";
+    console.log("[ImageEnhance] Vault base path:", basePath);
+
     let imageList: (Image & { file: TFile | null })[] = [];
     const fileArray = this.filterFile(this.helper.getAllFiles());
 
+    console.log("[ImageEnhance] Parsed images from content:", fileArray.length);
+
     for (const match of fileArray) {
       const imageName = match.name;
-      const uri = normalizePath(decodeURI(match.path));
+      const uri = decodeURI(match.path);
+
+      console.log("[ImageEnhance] Processing image:", { uri, imageName });
 
       if (uri.startsWith("http")) {
         imageList.push({
@@ -339,38 +372,46 @@ export default class imageEnhancePlugin extends Plugin {
         });
       } else {
         const fileName = basename(uri);
-        let file: TFile | undefined | null;
-        // 优先匹配绝对路径
-        if (filePathMap[uri]) {
-          file = filePathMap[uri];
+        let vaultRelativePath: string;
+
+        // Wiki 链接路径处理：
+        // 以 ./ 或 ../ 开头的是相对于当前文件
+        // 否则是相对于 vault 根目录
+        if (uri.startsWith("./") || uri.startsWith("../")) {
+          // 相对路径
+          vaultRelativePath = normalizePath(resolve(dirname(activeFile.path), uri));
+        } else {
+          // 绝对路径（相对于 vault 根目录）
+          vaultRelativePath = normalizePath(uri);
         }
 
-        // 相对路径（包括不以 ./ 或 ../ 开头的相对路径）
-        if (!file) {
-          const filePath = normalizePath(
-            resolve(dirname(activeFile.path), uri)
-          );
-
-          file = filePathMap[filePath];
+        // 拼接完整绝对路径（确保以 / 开头）
+        let fullPath = basePath ? normalizePath(join(basePath, vaultRelativePath)) : vaultRelativePath;
+        if (!fullPath.startsWith("/")) {
+          fullPath = "/" + fullPath;
         }
+        console.log("[ImageEnhance] Full file path:", fullPath);
 
-        // 最后尝试用文件名匹配
-        if (!file) {
-          file = fileMap[fileName];
-        }
+        // 创建虚拟文件对象，同时保存相对路径和绝对路径
+        const file = {
+          path: vaultRelativePath, // 相对路径，供 Obsidian API 使用
+          name: fileName,
+          extension: fileName.split('.').pop() || '',
+          // 添加完整路径属性用于上传（使用绝对路径）
+          fullPath: fullPath,
+        } as unknown as TFile;
 
-        if (file) {
-          if (isAssetTypeAnImage(file.path)) {
-            imageList.push({
-              path: normalizePath(file.path),
-              name: imageName,
-              source: match.source,
-              file: file,
-            });
-          }
-        }
+        imageList.push({
+          path: vaultRelativePath,
+          name: imageName,
+          source: match.source,
+          file: file,
+        });
+        console.log("[ImageEnhance] Added image to list:", vaultRelativePath);
       }
     }
+
+    console.log("[ImageEnhance] Final image list:", imageList.length);
 
     if (imageList.length === 0) {
       new Notice(t("Can not find image file"));

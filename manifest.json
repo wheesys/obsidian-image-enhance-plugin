@@ -1,7 +1,7 @@
 {
   "id": "image-enhance",
   "name": "image enhance",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "minAppVersion": "0.10.7",
   "description": "image enhance, about up(by picgo)/down/clean.",
   "author": "walle",

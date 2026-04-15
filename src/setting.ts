@@ -15,6 +15,7 @@ export interface PluginSettings {
   deleteSource: boolean;
   imageDesc: "origin" | "none" | "removeDefault";
   remoteServerMode: boolean;
+  debugMode: boolean;
   uploadedImages?: UploadedImage[];
 }
 
@@ -36,6 +37,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   deleteSource: false,
   imageDesc: "origin",
   remoteServerMode: false,
+  debugMode: false,
 };
 
 export class SettingTab extends PluginSettingTab {
