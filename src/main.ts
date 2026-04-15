@@ -345,8 +345,8 @@ export default class imageEnhancePlugin extends Plugin {
           file = filePathMap[uri];
         }
 
-        // 相对路径
-        if ((!file && uri.startsWith("./")) || uri.startsWith("../")) {
+        // 相对路径（包括不以 ./ 或 ../ 开头的相对路径）
+        if (!file) {
           const filePath = normalizePath(
             resolve(dirname(activeFile.path), uri)
           );
@@ -354,7 +354,7 @@ export default class imageEnhancePlugin extends Plugin {
           file = filePathMap[filePath];
         }
 
-        // 尽可能短路径
+        // 最后尝试用文件名匹配
         if (!file) {
           file = fileMap[fileName];
         }
@@ -447,15 +447,15 @@ export default class imageEnhancePlugin extends Plugin {
               file = filePathMap[uri];
             }
 
-            // 相对路径
-            if ((!file && uri.startsWith("./")) || uri.startsWith("../")) {
+            // 相对路径（包括不以 ./ 或 ../ 开头的相对路径）
+            if (!file) {
               const filePath = normalizePath(
                 resolve(dirname(mdFile.path), uri)
               );
               file = filePathMap[filePath];
             }
 
-            // 尽可能短路径
+            // 最后尝试用文件名匹配
             if (!file) {
               file = fileMap[fileName];
             }
@@ -578,15 +578,15 @@ export default class imageEnhancePlugin extends Plugin {
           referencedFile = filePathMap[imagePath];
         }
 
-        // 相对路径
-        if (!referencedFile && (imagePath.startsWith("./") || imagePath.startsWith("../"))) {
+        // 相对路径（包括不以 ./ 或 ../ 开头的相对路径）
+        if (!referencedFile) {
           const filePath = normalizePath(
             resolve(dirname(mdFile.path), imagePath)
           );
           referencedFile = filePathMap[filePath];
         }
 
-        // 尽可能短路径
+        // 最后尝试用文件名匹配
         if (!referencedFile) {
           referencedFile = fileMap[fileName];
         }
@@ -667,8 +667,8 @@ export default class imageEnhancePlugin extends Plugin {
           fileExists = true;
         }
 
-        // 相对路径
-        if (!fileExists && (imagePath.startsWith("./") || imagePath.startsWith("../"))) {
+        // 相对路径（包括不以 ./ 或 ../ 开头的相对路径）
+        if (!fileExists) {
           const filePath = normalizePath(
             resolve(dirname(mdFile.path), imagePath)
           );
@@ -677,7 +677,7 @@ export default class imageEnhancePlugin extends Plugin {
           }
         }
 
-        // 尽可能短路径
+        // 最后尝试用文件名匹配
         if (!fileExists && fileMap[fileName]) {
           fileExists = true;
         }
