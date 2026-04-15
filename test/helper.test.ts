@@ -224,5 +224,42 @@ describe("Helper", () => {
         },
       ]);
     });
+
+    it("should handle wiki links without exclamation mark", () => {
+      const mockValue = `
+      [[夜雨秋灯话鬼狐-ai短视频/附件/5a965b32e762ccdd095d63453172a1ed_MD5.jpg|Open: 王金榜-油条.png]]
+      `;
+
+      const result = helper.getImageLink(mockValue);
+
+      expect(result).toEqual([
+        {
+          path: "夜雨秋灯话鬼狐-ai短视频/附件/5a965b32e762ccdd095d63453172a1ed_MD5.jpg",
+          name: "5a965b32e762ccdd095d63453172a1ed_MD5.jpg|Open: 王金榜-油条.png",
+          source: "[[夜雨秋灯话鬼狐-ai短视频/附件/5a965b32e762ccdd095d63453172a1ed_MD5.jpg|Open: 王金榜-油条.png]]",
+        },
+      ]);
+    });
+
+    it("should handle both with and without exclamation mark wiki links", () => {
+      const mockValue = `
+      ![[image.png]]
+      [[folder/image.jpg|alt text]]
+      ![[nested/file.png|description]]
+      `;
+
+      const result = helper.getImageLink(mockValue);
+
+      expect(result).toHaveLength(3);
+      expect(result[0]).toMatchObject({
+        path: "image.png",
+      });
+      expect(result[1]).toMatchObject({
+        path: "folder/image.jpg",
+      });
+      expect(result[2]).toMatchObject({
+        path: "nested/file.png",
+      });
+    });
   });
 });

@@ -10,7 +10,8 @@ interface Image {
 // ![](https://dasdasda) internet image should not has ext
 const REGEX_FILE =
   /\!\[(.*?)\]\(<(\S+\.\w+)>\)|\!\[(.*?)\]\((\S+\.\w+)(?:\s+"[^"]*")?\)|\!\[(.*?)\]\((https?:\/\/.*?)\)/g;
-const REGEX_WIKI_FILE = /\!\[\[(.*?)(\s*?\|.*?)?\]\]/g;
+// Support both ![[...]] and [[...]] formats for Wiki links, and handle paths without extensions
+const REGEX_WIKI_FILE = /!?\[\[(.*?)(\s*?\|.*?)?\]\]/g;
 
 export default class Helper {
   app: App;
