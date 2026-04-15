@@ -9,6 +9,7 @@ import {
   Notice,
   addIcon,
   MarkdownFileInfo,
+  FileSystemAdapter,
 } from "obsidian";
 import { resolve, basename, dirname, join } from "path-browserify";
 
@@ -39,14 +40,14 @@ export default class imageEnhancePlugin extends Plugin {
   onunload() {}
 
   async onload() {
-    console.log("%c[ImageEnhance] Plugin loading... Version 1.0.3", "color: #00ff00; font-size: 16px; font-weight: bold;");
+    console.debug("%c[ImageEnhance] Plugin loading... Version 1.0.3", "color: #00ff00; font-size: 16px; font-weight: bold;");
     try {
       await this.loadSettings();
-      console.log("[ImageEnhance] Settings loaded:", this.settings);
+      console.debug("[ImageEnhance] Settings loaded:", this.settings);
 
       this.helper = new Helper(this.app);
       this.picGoDeleter = new PicGoDeleter(this);
-      console.log("[ImageEnhance] Helper and Deleter created");
+      console.debug("[ImageEnhance] Helper and Deleter created");
     } catch (error) {
       console.error("[ImageEnhance] Error during initialization:", error);
     }
@@ -60,29 +61,28 @@ export default class imageEnhancePlugin extends Plugin {
 
     this.addSettingTab(new SettingTab(this.app, this));
 
-    console.log("[ImageEnhance] Registering commands...");
+    console.debug("[ImageEnhance] Registering commands...");
     try {
       this.addCommand({
         id: "upload-all-images",
         name: "Upload all images",
         checkCallback: (checking: boolean) => {
-          console.log("[ImageEnhance] Upload all images command triggered, checking:", checking);
+          console.debug("[ImageEnhance] Upload all images command triggered, checking:", checking);
           let leaf = this.app.workspace.getActiveViewOfType(MarkdownView);
-          console.log("[ImageEnhance] Current leaf:", leaf);
-          console.log("[ImageEnhance] Active leaves:", this.app.workspace.activeLeaf);
+          console.debug("[ImageEnhance] Current leaf:", leaf);
           if (leaf) {
-            console.log("[ImageEnhance] Has MarkdownView, will execute");
+            console.debug("[ImageEnhance] Has MarkdownView, will execute");
             if (!checking) {
-              console.log("[ImageEnhance] Executing uploadAllFile NOW");
+              console.debug("[ImageEnhance] Executing uploadAllFile NOW");
               this.uploadAllFile();
             }
             return true;
           }
-          console.log("[ImageEnhance] No MarkdownView found!");
+          console.debug("[ImageEnhance] No MarkdownView found!");
           return false;
         },
       });
-      console.log("[ImageEnhance] Command 'upload-all-images' registered");
+      console.debug("[ImageEnhance] Command 'upload-all-images' registered");
     } catch (error) {
       console.error("[ImageEnhance] Error registering command:", error);
     }
@@ -124,7 +124,7 @@ export default class imageEnhancePlugin extends Plugin {
     this.setupPasteHandler();
     this.registerFileMenu();
     this.registerSelection();
-    console.log("[ImageEnhance] All commands and handlers registered successfully");
+    console.debug("[ImageEnhance] All commands and handlers registered successfully");
   }
 
   /**
@@ -227,9 +227,6 @@ export default class imageEnhancePlugin extends Plugin {
               .setTitle(t("upload"))
               .setIcon("upload")
               .onClick(() => {
-                if (!(file instanceof TFile)) {
-                  return false;
-                }
                 this.fileMenuUpload(file);
               });
           });
@@ -265,19 +262,24 @@ export default class imageEnhancePlugin extends Plugin {
       return;
     }
 
-    this.upload(imageList).then(res => {
-      if (!res.success) {
-        new Notice("Upload error");
-        return;
-      }
+    this.upload(imageList)
+      .then(res => {
+        if (!res.success) {
+          new Notice("Upload error");
+          return;
+        }
 
-      let uploadUrlList = res.result;
-      this.replaceImage(imageList, uploadUrlList);
-    });
+        let uploadUrlList = res.result;
+        this.replaceImage(imageList, uploadUrlList);
+      })
+      .catch(error => {
+        console.debug("Upload failed:", error);
+        new Notice("Upload error");
+      });
   }
 
   filterFile(fileArray: Image[]) {
-    console.log("[ImageEnhance] filterFile called with", fileArray.length, "items");
+    console.debug("[ImageEnhance] filterFile called with", fileArray.length, "items");
     const imageList: Image[] = [];
 
     for (const match of fileArray) {
@@ -343,25 +345,25 @@ export default class imageEnhancePlugin extends Plugin {
    * 上传所有图片
    */
   uploadAllFile() {
-    console.log("[ImageEnhance] uploadAllFile called!");
+    console.debug("[ImageEnhance] uploadAllFile called!");
     const activeFile = this.app.workspace.getActiveFile();
-    console.log("[ImageEnhance] Current file:", activeFile?.path);
+    console.debug("[ImageEnhance] Current file:", activeFile?.path);
 
     // 获取 vault 的基础路径
-    const adapter = this.app.vault.adapter;
-    const basePath = (adapter as any).getBasePath?.() || "";
-    console.log("[ImageEnhance] Vault base path:", basePath);
+    const adapter = this.app.vault.adapter as FileSystemAdapter & { getBasePath?: () => string };
+    const basePath = adapter.getBasePath?.() || "";
+    console.debug("[ImageEnhance] Vault base path:", basePath);
 
     let imageList: (Image & { file: TFile | null })[] = [];
     const fileArray = this.filterFile(this.helper.getAllFiles());
 
-    console.log("[ImageEnhance] Parsed images from content:", fileArray.length);
+    console.debug("[ImageEnhance] Parsed images from content:", fileArray.length);
 
     for (const match of fileArray) {
       const imageName = match.name;
       const uri = decodeURI(match.path);
 
-      console.log("[ImageEnhance] Processing image:", { uri, imageName });
+      console.debug("[ImageEnhance] Processing image:", { uri, imageName });
 
       if (uri.startsWith("http")) {
         imageList.push({
@@ -390,7 +392,7 @@ export default class imageEnhancePlugin extends Plugin {
         if (!fullPath.startsWith("/")) {
           fullPath = "/" + fullPath;
         }
-        console.log("[ImageEnhance] Full file path:", fullPath);
+        console.debug("[ImageEnhance] Full file path:", fullPath);
 
         // 创建虚拟文件对象，同时保存相对路径和绝对路径
         const file = {
@@ -407,11 +409,11 @@ export default class imageEnhancePlugin extends Plugin {
           source: match.source,
           file: file,
         });
-        console.log("[ImageEnhance] Added image to list:", vaultRelativePath);
+        console.debug("[ImageEnhance] Added image to list:", vaultRelativePath);
       }
     }
 
-    console.log("[ImageEnhance] Final image list:", imageList.length);
+    console.debug("[ImageEnhance] Final image list:", imageList.length);
 
     if (imageList.length === 0) {
       new Notice(t("Can not find image file"));
@@ -420,22 +422,27 @@ export default class imageEnhancePlugin extends Plugin {
       new Notice(`Have found ${imageList.length} images`);
     }
 
-    this.upload(imageList).then(res => {
-      let uploadUrlList = res.result;
-      if (imageList.length !== uploadUrlList.length) {
-        new Notice(
-          t("Warning: upload files is different of reciver files from api")
-        );
-        return;
-      }
-      const currentFile = this.app.workspace.getActiveFile();
-      if (activeFile.path !== currentFile.path) {
-        new Notice(t("File has been changedd, upload failure"));
-        return;
-      }
+    this.upload(imageList)
+      .then(res => {
+        let uploadUrlList = res.result;
+        if (imageList.length !== uploadUrlList.length) {
+          new Notice(
+            t("Warning: upload files is different of reciver files from api")
+          );
+          return;
+        }
+        const currentFile = this.app.workspace.getActiveFile();
+        if (activeFile.path !== currentFile.path) {
+          new Notice(t("File has been changedd, upload failure"));
+          return;
+        }
 
-      this.replaceImage(imageList, uploadUrlList);
-    });
+        this.replaceImage(imageList, uploadUrlList);
+      })
+      .catch(error => {
+        console.debug("Upload failed:", error);
+        new Notice("Upload error");
+      });
   }
 
   /**
@@ -758,7 +765,6 @@ export default class imageEnhancePlugin extends Plugin {
             this.settings.uploadByClipSwitch
           );
 
-          let files = evt.clipboardData.files;
           if (!allowUpload) {
             return;
           }
@@ -778,10 +784,15 @@ export default class imageEnhancePlugin extends Plugin {
               );
 
             if (imageList.length !== 0) {
-              this.upload(imageList).then(res => {
-                let uploadUrlList = res.result;
-                this.replaceImage(imageList, uploadUrlList);
-              });
+              this.upload(imageList)
+                .then(res => {
+                  let uploadUrlList = res.result;
+                  this.replaceImage(imageList, uploadUrlList);
+                })
+                .catch(error => {
+                  console.debug("Upload failed:", error);
+                  new Notice("Upload error");
+                });
             }
           }
 
@@ -825,15 +836,16 @@ export default class imageEnhancePlugin extends Plugin {
             return;
           }
 
-          let files = evt.dataTransfer.files;
+          const files = evt.dataTransfer.files;
           if (files.length !== 0 && files[0].type.startsWith("image")) {
             let sendFiles: Array<string> = [];
-            let files = evt.dataTransfer.files;
             Array.from(files).forEach((item, index) => {
               if (item.path) {
                 sendFiles.push(item.path);
               } else {
-                const { webUtils } = require("electron");
+                // Electron specific API for getting file path from File object
+                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                const { webUtils } = require("electron") as { webUtils: { getPathForFile: (file: File) => string } };
                 const path = webUtils.getPathForFile(item);
                 sendFiles.push(path);
               }
@@ -879,7 +891,7 @@ export default class imageEnhancePlugin extends Plugin {
     callback: (editor: Editor, pasteId: string) => Promise<string>,
     clipboardData: DataTransfer
   ) {
-    let pasteId = (Math.random() + 1).toString(36).substr(2, 5);
+    let pasteId = (Math.random() + 1).toString(36).substring(2, 7);
     this.insertTemporaryText(editor, pasteId);
     const name = clipboardData.files[0].name;
 

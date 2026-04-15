@@ -9,7 +9,7 @@ interface Image {
 // ![](./dsa/aa.png) local image should has ext, support ![](<./dsa/aa.png>), support ![](image.png "alt")
 // ![](https://dasdasda) internet image should not has ext
 const REGEX_FILE =
-  /\!\[(.*?)\]\(<(\S+\.\w+)>\)|\!\[(.*?)\]\((\S+\.\w+)(?:\s+"[^"]*")?\)|\!\[(.*?)\]\((https?:\/\/.*?)\)/g;
+  /!\[(.*?)\]\(<(\S+\.\w+)>\)|!\[(.*?)\]\((\S+\.\w+)(?:\s+"[^"]*")?\)|!\[(.*?)\]\((https?:\/\/.*?)\)/g;
 // Support both ![[...]] and [[...]] formats for Wiki links, and handle paths without extensions
 const REGEX_WIKI_FILE = /!?\[\[(.*?)(\s*?\|.*?)?\]\]/g;
 

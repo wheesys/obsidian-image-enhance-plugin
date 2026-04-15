@@ -65,9 +65,9 @@ export class SettingTab extends PluginSettingTab {
       .addToggle(toggle =>
         toggle
           .setValue(this.plugin.settings.uploadByClipSwitch)
-          .onChange(async value => {
+          .onChange(value => {
             this.plugin.settings.uploadByClipSwitch = value;
-            await this.plugin.saveSettings();
+            void this.plugin.saveSettings();
           })
       );
 
@@ -79,10 +79,10 @@ export class SettingTab extends PluginSettingTab {
           .addOption("PicGo", "PicGo(app)")
           .addOption("PicGo-Core", "PicGo-Core")
           .setValue(this.plugin.settings.uploader)
-          .onChange(async value => {
+          .onChange(value => {
             this.plugin.settings.uploader = value;
             this.display();
-            await this.plugin.saveSettings();
+            void this.plugin.saveSettings();
           })
       );
 
@@ -94,9 +94,9 @@ export class SettingTab extends PluginSettingTab {
           text
             .setPlaceholder(t("Please input PicGo server"))
             .setValue(this.plugin.settings.uploadServer)
-            .onChange(async key => {
+            .onChange(key => {
               this.plugin.settings.uploadServer = key;
-              await this.plugin.saveSettings();
+              void this.plugin.saveSettings();
             })
         );
 
@@ -107,9 +107,9 @@ export class SettingTab extends PluginSettingTab {
           text
             .setPlaceholder(t("Please input PicGo delete server"))
             .setValue(this.plugin.settings.deleteServer)
-            .onChange(async key => {
+            .onChange(key => {
               this.plugin.settings.deleteServer = key;
-              await this.plugin.saveSettings();
+              void this.plugin.saveSettings();
             })
         );
     }
@@ -120,13 +120,13 @@ export class SettingTab extends PluginSettingTab {
       .addToggle(toggle =>
         toggle
           .setValue(this.plugin.settings.remoteServerMode)
-          .onChange(async value => {
+          .onChange(value => {
             this.plugin.settings.remoteServerMode = value;
             if (value) {
               this.plugin.settings.workOnNetWork = false;
             }
             this.display();
-            await this.plugin.saveSettings();
+            void this.plugin.saveSettings();
           })
       );
 
@@ -140,9 +140,9 @@ export class SettingTab extends PluginSettingTab {
           text
             .setPlaceholder("")
             .setValue(this.plugin.settings.picgoCorePath)
-            .onChange(async value => {
+            .onChange(value => {
               this.plugin.settings.picgoCorePath = value;
-              await this.plugin.saveSettings();
+              void this.plugin.saveSettings();
             })
         );
     }
@@ -157,10 +157,10 @@ export class SettingTab extends PluginSettingTab {
           .addOption("none", t("remove all")) // 移除全部
           .addOption("removeDefault", t("remove default")) // 只移除默认即 image.png
           .setValue(this.plugin.settings.imageDesc)
-          .onChange(async (value: "origin" | "none" | "removeDefault") => {
+          .onChange((value: "origin" | "none" | "removeDefault") => {
             this.plugin.settings.imageDesc = value;
             this.display();
-            await this.plugin.saveSettings();
+            void this.plugin.saveSettings();
           })
       );
 
@@ -171,9 +171,9 @@ export class SettingTab extends PluginSettingTab {
         text
           .setPlaceholder(t("Please input image size suffix"))
           .setValue(this.plugin.settings.imageSizeSuffix)
-          .onChange(async key => {
+          .onChange(key => {
             this.plugin.settings.imageSizeSuffix = key;
-            await this.plugin.saveSettings();
+            void this.plugin.saveSettings();
           })
       );
 
@@ -183,7 +183,7 @@ export class SettingTab extends PluginSettingTab {
       .addToggle(toggle =>
         toggle
           .setValue(this.plugin.settings.workOnNetWork)
-          .onChange(async value => {
+          .onChange(value => {
             if (this.plugin.settings.remoteServerMode) {
               new Notice("Can only work when remote server mode is off.");
               this.plugin.settings.workOnNetWork = false;
@@ -191,7 +191,7 @@ export class SettingTab extends PluginSettingTab {
               this.plugin.settings.workOnNetWork = value;
             }
             this.display();
-            await this.plugin.saveSettings();
+            void this.plugin.saveSettings();
           })
       );
 
@@ -201,9 +201,9 @@ export class SettingTab extends PluginSettingTab {
       .addTextArea(textArea =>
         textArea
           .setValue(this.plugin.settings.newWorkBlackDomains)
-          .onChange(async value => {
+          .onChange(value => {
             this.plugin.settings.newWorkBlackDomains = value;
-            await this.plugin.saveSettings();
+            void this.plugin.saveSettings();
           })
       );
 
@@ -217,10 +217,10 @@ export class SettingTab extends PluginSettingTab {
       .addToggle(toggle =>
         toggle
           .setValue(this.plugin.settings.applyImage)
-          .onChange(async value => {
+          .onChange(value => {
             this.plugin.settings.applyImage = value;
             this.display();
-            await this.plugin.saveSettings();
+            void this.plugin.saveSettings();
           })
       );
 
@@ -230,10 +230,9 @@ export class SettingTab extends PluginSettingTab {
       .addToggle(toggle =>
         toggle
           .setValue(this.plugin.settings.deleteSource)
-          .onChange(async value => {
+          .onChange(value => {
             this.plugin.settings.deleteSource = value;
-            this.display();
-            await this.plugin.saveSettings();
+            void this.plugin.saveSettings();
           })
       );
   }

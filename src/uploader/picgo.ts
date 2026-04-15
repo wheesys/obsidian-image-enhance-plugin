@@ -1,5 +1,5 @@
 import { join, extname } from "path-browserify";
-import { requestUrl, normalizePath, FileSystemAdapter } from "obsidian";
+import { requestUrl, normalizePath, FileSystemAdapter, TFile } from "obsidian";
 
 import { bufferToArrayBuffer } from "../utils";
 import { payloadGenerator } from "../payloadGenerator";
@@ -34,7 +34,6 @@ export default class PicGoUploader implements Uploader {
       for (let i = 0; i < fileList.length; i++) {
         if (typeof fileList[i] === "string") {
           // Dynamic import for Electron environment
-          // eslint-disable-next-line @typescript-eslint/no-var-requires
           const fs = require("fs") as { readFile: (path: string, callback: (err: NodeJS.ErrnoException | null, data: Buffer) => void) => void };
           const file = fileList[i] as string;
 
@@ -73,7 +72,8 @@ export default class PicGoUploader implements Uploader {
         if (typeof item === "string") {
           return item;
         } else {
-          const imagePath = (item.file as any)?.fullPath || item.path;
+          // fullPath is dynamically added property for upload purposes
+          const imagePath = (item.file as TFile & { fullPath?: string })?.fullPath || item.path;
           return normalizePath(imagePath);
         }
       });

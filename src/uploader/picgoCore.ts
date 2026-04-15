@@ -41,7 +41,7 @@ export default class PicGoCoreUploader implements Uploader {
     const data = splitList.splice(splitListLength - 1 - length, length);
 
     if (res.includes("PicGo ERROR")) {
-      console.error(command, res);
+      console.debug(command, res);
 
       return {
         success: false,
@@ -69,7 +69,7 @@ export default class PicGoCoreUploader implements Uploader {
         result: [lastImage],
       };
     } else {
-      console.error(splitList);
+      console.debug(splitList);
 
       return {
         success: false,
@@ -93,7 +93,6 @@ export default class PicGoCoreUploader implements Uploader {
   }
 
   private async exec(command: string): Promise<string> {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { exec } = require("child_process") as { exec: (cmd: string, callback: (error: Error | null, stdout: { [Symbol.asyncIterator](): AsyncIterator<Buffer> }) => void) => void };
     return new Promise((resolve, reject) => {
       exec(command, async (error, stdout) => {
