@@ -8,7 +8,9 @@
     "dev": "rollup --config rollup.config.js -w",
     "build": "pnpm run typecheck && rollup --config rollup.config.js",
     "typecheck": "tsc --noEmit -p tsconfig.json --composite false",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix"
   },
   "keywords": [
     "obsidian.md",
