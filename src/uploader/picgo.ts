@@ -1,5 +1,5 @@
-import { join, extname } from "path-browserify";
-import { requestUrl, normalizePath, FileSystemAdapter, TFile } from "obsidian";
+import { extname } from "path-browserify";
+import { requestUrl, normalizePath } from "obsidian";
 
 import { bufferToArrayBuffer } from "../utils";
 import { payloadGenerator } from "../payloadGenerator";
@@ -64,10 +64,6 @@ export default class PicGoUploader implements Uploader {
       }
       response = await this.uploadFileByData(files);
     } else {
-      const basePath = (
-        this.plugin.app.vault.adapter as FileSystemAdapter
-      ).getBasePath();
-
       const list = fileList.map(item => {
         if (typeof item === "string") {
           return item;
@@ -172,7 +168,7 @@ export default class PicGoUploader implements Uploader {
         ...(this.settings.uploadedImages || []),
         ...uploadUrlFullResultList,
       ];
-      this.plugin.saveSettings();
+      void this.plugin.saveSettings();
     }
 
     return {

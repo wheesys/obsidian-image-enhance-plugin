@@ -4,16 +4,16 @@ export class App {
     getActiveViewOfType: () => ({
       editor: {
         getValue: () => "",
-        setValue: (value: string) => {},
+        setValue: (_value: string) => {},
         getScrollInfo: () => ({ left: 0, top: 0 }),
-        scrollTo: (left: number, top: number) => {},
+        scrollTo: (_left: number, _top: number) => {},
         getCursor: () => ({ line: 0, ch: 0 }),
-        setCursor: (pos: { line: number; ch: number }) => {},
+        setCursor: (_pos: { line: number; ch: number }) => {},
       },
     }),
   };
   metadataCache = {
-    getCache: (path: string) => ({
+    getCache: (_path: string) => ({
       frontmatter: {
         key: "value",
       },

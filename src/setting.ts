@@ -49,7 +49,7 @@ export class SettingTab extends PluginSettingTab {
   }
 
   display(): void {
-    let { containerEl } = this;
+    const { containerEl } = this;
 
     containerEl.empty();
     new Setting(containerEl)

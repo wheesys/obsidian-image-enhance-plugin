@@ -62,7 +62,7 @@ export default class Helper {
   // get all file urls, include local and internet
   getAllFiles(): Image[] {
     const editor = this.getEditor();
-    let value = editor.getValue();
+    const value = editor.getValue();
     console.debug("[ImageEnhance] Editor content length:", value?.length);
     console.debug("[ImageEnhance] Editor content preview:", value?.substring(0, 200));
     return this.getImageLink(value);
@@ -73,7 +73,7 @@ export default class Helper {
     const matches = value.matchAll(REGEX_FILE);
     const WikiMatches = value.matchAll(REGEX_WIKI_FILE);
 
-    let fileArray: Image[] = [];
+    const fileArray: Image[] = [];
 
     for (const match of matches) {
       const source = match[0];
@@ -116,7 +116,7 @@ export default class Helper {
       return false;
     }
     const blackDomainList = blackDomains.split(",").filter(item => item !== "");
-    let url = new URL(src);
+    const url = new URL(src);
     const domain = url.hostname;
 
     return blackDomainList.some(blackDomain => domain.includes(blackDomain));

@@ -19,7 +19,7 @@ export async function downloadAllImageFiles(plugin: imageEnhancePlugin) {
     await plugin.app.vault.adapter.mkdir(folderPath);
   }
 
-  let imageArray = [];
+  const imageArray = [];
   for (const file of fileArray) {
     if (!file.path.startsWith("http")) {
       continue;
@@ -27,7 +27,7 @@ export async function downloadAllImageFiles(plugin: imageEnhancePlugin) {
 
     const url = file.path;
     const asset = getUrlAsset(url);
-    let name = decodeURI(parse(asset).name).replaceAll(/[\\/:*?"<>|]/g, "-");
+    const name = decodeURI(parse(asset).name).replaceAll(/[\\/:*?"<>|]/g, "-");
 
     const response = await download(plugin, url, folderPath, name);
     if (response.ok) {
@@ -45,7 +45,7 @@ export async function downloadAllImageFiles(plugin: imageEnhancePlugin) {
 
   let value = plugin.helper.getValue();
   imageArray.forEach(image => {
-    let name = plugin.handleName(image.name);
+    const name = plugin.handleName(image.name);
 
     value = value.replace(image.source, `![${name}](${encodeURI(image.path)})`);
   });

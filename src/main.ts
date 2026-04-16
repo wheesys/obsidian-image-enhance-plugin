@@ -69,7 +69,7 @@ export default class imageEnhancePlugin extends Plugin {
         name: "Upload all images",
         checkCallback: (checking: boolean) => {
           console.debug("[ImageEnhance] Upload all images command triggered, checking:", checking);
-          let leaf = this.app.workspace.getActiveViewOfType(MarkdownView);
+          const leaf = this.app.workspace.getActiveViewOfType(MarkdownView);
           console.debug("[ImageEnhance] Current leaf:", leaf);
           if (leaf) {
             console.debug("[ImageEnhance] Has MarkdownView, will execute");
@@ -98,7 +98,7 @@ export default class imageEnhancePlugin extends Plugin {
       id: "download-all-images",
       name: "Download all images",
       checkCallback: (checking: boolean) => {
-        let leaf = this.app.workspace.getActiveViewOfType(MarkdownView);
+        const leaf = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (leaf) {
           if (!checking) {
             void downloadAllImageFiles(this);
@@ -141,7 +141,7 @@ export default class imageEnhancePlugin extends Plugin {
    * 上传图片
    */
   upload(images: Image[] | string[]) {
-    let uploader = this.getUploader();
+    const uploader = this.getUploader();
     return uploader.upload(images);
   }
 
@@ -149,7 +149,7 @@ export default class imageEnhancePlugin extends Plugin {
    * 通过剪贴板上传图片
    */
   uploadByClipboard(fileList?: FileList) {
-    let uploader = this.getUploader();
+    const uploader = this.getUploader();
     return uploader.uploadByClipboard(fileList);
   }
 
@@ -157,7 +157,7 @@ export default class imageEnhancePlugin extends Plugin {
     this.registerEvent(
       this.app.workspace.on(
         "editor-menu",
-        (menu: Menu, editor: Editor, info: MarkdownView | MarkdownFileInfo) => {
+        (menu: Menu, editor: Editor, _info: MarkdownView | MarkdownFileInfo) => {
           if (this.app.workspace.getLeavesOfType("markdown").length === 0) {
             return;
           }
@@ -219,7 +219,7 @@ export default class imageEnhancePlugin extends Plugin {
     this.registerEvent(
       this.app.workspace.on(
         "file-menu",
-        (menu: Menu, file: TFile, source: string, leaf) => {
+        (menu: Menu, file: TFile, source: string, _leaf) => {
           if (source === "canvas-menu") return false;
           if (!isAssetTypeAnImage(file.path)) return false;
 
@@ -237,7 +237,7 @@ export default class imageEnhancePlugin extends Plugin {
   }
 
   fileMenuUpload(file: TFile) {
-    let imageList: Image[] = [];
+    const imageList: Image[] = [];
     const fileArray = this.helper.getAllFiles();
 
     for (const match of fileArray) {
@@ -270,7 +270,7 @@ export default class imageEnhancePlugin extends Plugin {
           return;
         }
 
-        let uploadUrlList = res.result;
+        const uploadUrlList = res.result;
         this.replaceImage(imageList, uploadUrlList);
       })
       .catch(error => {
@@ -334,12 +334,12 @@ export default class imageEnhancePlugin extends Plugin {
     this.helper.setValue(content);
 
     if (this.settings.deleteSource) {
-      imageList.forEach(image => {
+      for (const image of imageList) {
         // Only delete real TFile objects, not virtual FileWithFullPath objects
         if (image.file && !image.path.startsWith("http") && "vault" in image.file) {
-          this.app.fileManager.trashFile(image.file);
+          void this.app.fileManager.trashFile(image.file);
         }
-      });
+      }
     }
   }
 
@@ -356,7 +356,7 @@ export default class imageEnhancePlugin extends Plugin {
     const basePath = adapter.getBasePath?.() || "";
     console.debug("[ImageEnhance] Vault base path:", basePath);
 
-    let imageList: (Image & { file: TFile | FileWithFullPath | null })[] = [];
+    const imageList: (Image & { file: TFile | FileWithFullPath | null })[] = [];
     const fileArray = this.filterFile(this.helper.getAllFiles());
 
     console.debug("[ImageEnhance] Parsed images from content:", fileArray.length);
@@ -426,7 +426,7 @@ export default class imageEnhancePlugin extends Plugin {
 
     this.upload(imageList)
       .then(res => {
-        let uploadUrlList = res.result;
+        const uploadUrlList = res.result;
         if (imageList.length !== uploadUrlList.length) {
           new Notice(
             t("Warning: upload files is different of reciver files from api")
@@ -547,7 +547,7 @@ export default class imageEnhancePlugin extends Plugin {
     for (const { file: mdFile, images: imageList } of filesWithImages) {
       try {
         const res = await this.upload(imageList);
-        let uploadUrlList = res.result;
+        const uploadUrlList = res.result;
 
         if (imageList.length !== uploadUrlList.length) {
           new Notice(
@@ -561,19 +561,19 @@ export default class imageEnhancePlugin extends Plugin {
         let content = await this.app.vault.read(mdFile);
         imageList.forEach(item => {
           const uploadImage = uploadUrlList.shift();
-          let name = this.handleName(item.name);
+          const name = this.handleName(item.name);
           content = content.replaceAll(item.source, `![${name}](${uploadImage})`);
         });
         await this.app.vault.modify(mdFile, content);
 
         // 删除源文件
         if (this.settings.deleteSource) {
-          imageList.forEach(image => {
+          for (const image of imageList) {
             // Only delete real TFile objects, not virtual FileWithFullPath objects
             if (image.file && !image.path.startsWith("http") && "vault" in image.file) {
-              this.app.fileManager.trashFile(image.file);
+              void this.app.fileManager.trashFile(image.file);
             }
-          });
+          }
         }
 
         processedCount++;
@@ -666,7 +666,7 @@ export default class imageEnhancePlugin extends Plugin {
     let deletedCount = 0;
     for (const imageFile of unusedImages) {
       try {
-        this.app.fileManager.trashFile(imageFile);
+        void this.app.fileManager.trashFile(imageFile);
         deletedCount++;
       } catch (error) {
         console.error(`Failed to delete ${imageFile.path}:`, error);
@@ -698,7 +698,7 @@ export default class imageEnhancePlugin extends Plugin {
     let processedFiles = 0;
 
     for (const mdFile of markdownFiles) {
-      let content = await this.app.vault.read(mdFile);
+      const content = await this.app.vault.read(mdFile);
       const imageLinks = this.helper.getImageLink(content);
       let modifiedContent = content;
 
@@ -762,7 +762,7 @@ export default class imageEnhancePlugin extends Plugin {
     this.registerEvent(
       this.app.workspace.on(
         "editor-paste",
-        (evt: ClipboardEvent, editor: Editor, markdownView: MarkdownView) => {
+        (evt: ClipboardEvent, editor: Editor, _markdownView: MarkdownView) => {
           const allowUpload = this.helper.getFrontmatterValue(
             "image-enhance",
             this.settings.uploadByClipSwitch
@@ -789,7 +789,7 @@ export default class imageEnhancePlugin extends Plugin {
             if (imageList.length !== 0) {
               this.upload(imageList)
                 .then(res => {
-                  let uploadUrlList = res.result;
+                  const uploadUrlList = res.result;
                   this.replaceImage(imageList, uploadUrlList);
                 })
                 .catch(error => {
@@ -826,7 +826,7 @@ export default class imageEnhancePlugin extends Plugin {
     this.registerEvent(
       this.app.workspace.on(
         "editor-drop",
-        async (evt: DragEvent, editor: Editor, markdownView: MarkdownView) => {
+        async (evt: DragEvent, editor: Editor, _markdownView: MarkdownView) => {
           // when ctrl key is pressed, do not upload image, because it is used to set local file
           if (evt.ctrlKey) {
             return;
@@ -842,8 +842,8 @@ export default class imageEnhancePlugin extends Plugin {
 
           const files = evt.dataTransfer.files;
           if (files.length !== 0 && files[0].type.startsWith("image")) {
-            let sendFiles: Array<string> = [];
-            Array.from(files).forEach((item, index) => {
+            const sendFiles: Array<string> = [];
+            Array.from(files).forEach((item, _index) => {
               if (item.path) {
                 sendFiles.push(item.path);
               } else {
@@ -860,7 +860,7 @@ export default class imageEnhancePlugin extends Plugin {
 
             if (data.success) {
               data.result.map((value: string) => {
-                let pasteId = (Math.random() + 1).toString(36).substring(2, 7);
+                const pasteId = (Math.random() + 1).toString(36).substring(2, 7);
                 this.insertTemporaryText(editor, pasteId);
                 this.embedMarkDownImage(editor, pasteId, value, files[0].name);
               });
@@ -895,7 +895,7 @@ export default class imageEnhancePlugin extends Plugin {
     callback: (editor: Editor, pasteId: string) => Promise<string>,
     clipboardData: DataTransfer
   ) {
-    let pasteId = (Math.random() + 1).toString(36).substring(2, 7);
+    const pasteId = (Math.random() + 1).toString(36).substring(2, 7);
     this.insertTemporaryText(editor, pasteId);
     const name = clipboardData.files[0].name;
 
@@ -908,7 +908,7 @@ export default class imageEnhancePlugin extends Plugin {
   }
 
   insertTemporaryText(editor: Editor, pasteId: string) {
-    let progressText = imageEnhancePlugin.progressTextFor(pasteId);
+    const progressText = imageEnhancePlugin.progressTextFor(pasteId);
     editor.replaceSelection(progressText + "\n");
   }
 
@@ -922,10 +922,10 @@ export default class imageEnhancePlugin extends Plugin {
     imageUrl: string,
     name: string = ""
   ) {
-    let progressText = imageEnhancePlugin.progressTextFor(pasteId);
+    const progressText = imageEnhancePlugin.progressTextFor(pasteId);
     name = this.handleName(name);
 
-    let markDownImage = `![${name}](${imageUrl})`;
+    const markDownImage = `![${name}](${imageUrl})`;
 
     imageEnhancePlugin.replaceFirstOccurrence(
       editor,
@@ -938,7 +938,7 @@ export default class imageEnhancePlugin extends Plugin {
     const message = typeof reason === "string" ? reason : reason.message;
     new Notice(message);
     console.error("Failed request: ", reason);
-    let progressText = imageEnhancePlugin.progressTextFor(pasteId);
+    const progressText = imageEnhancePlugin.progressTextFor(pasteId);
     imageEnhancePlugin.replaceFirstOccurrence(
       editor,
       progressText,
@@ -969,12 +969,12 @@ export default class imageEnhancePlugin extends Plugin {
     target: string,
     replacement: string
   ) {
-    let lines = editor.getValue().split("\n");
+    const lines = editor.getValue().split("\n");
     for (let i = 0; i < lines.length; i++) {
-      let ch = lines[i].indexOf(target);
+      const ch = lines[i].indexOf(target);
       if (ch != -1) {
-        let from = { line: i, ch: ch };
-        let to = { line: i, ch: ch + target.length };
+        const from = { line: i, ch: ch };
+        const to = { line: i, ch: ch + target.length };
         editor.replaceRange(replacement, from, to);
         break;
       }

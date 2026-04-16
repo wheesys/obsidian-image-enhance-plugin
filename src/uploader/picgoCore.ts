@@ -31,8 +31,8 @@ export default class PicGoCoreUploader implements Uploader {
     });
 
     const length = list.length;
-    let cli = this.settings.picgoCorePath || "picgo";
-    let command = `${cli} upload ${list.map(item => `"${item}"`).join(" ")}`;
+    const cli = this.settings.picgoCorePath || "picgo";
+    const command = `${cli} upload ${list.map(item => `"${item}"`).join(" ")}`;
 
     const res = await this.exec(command);
     const splitList = res.split("\n");
@@ -96,12 +96,11 @@ export default class PicGoCoreUploader implements Uploader {
     // eslint-disable-next-line @typescript-eslint/no-var-requires -- Electron environment: child_process is only available in desktop app via require
     const { exec } = require("child_process") as { exec: (cmd: string, callback: (error: Error | null, stdout: { [Symbol.asyncIterator](): AsyncIterator<Buffer> }) => void) => void };
     return new Promise((resolve, reject) => {
-      exec(command, async (error, stdout) => {
+      exec(command, (error, stdout) => {
         if (error) {
           reject(error);
         } else {
-          const res = await streamToString(stdout);
-          resolve(res);
+          void streamToString(stdout).then(res => resolve(res));
         }
       });
     });
