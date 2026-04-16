@@ -33,7 +33,7 @@ export default class PicGoUploader implements Uploader {
       const files: File[] = [];
       for (let i = 0; i < fileList.length; i++) {
         if (typeof fileList[i] === "string") {
-          // eslint-disable-next-line @typescript-eslint/no-var-requires -- Electron environment: fs is only available in desktop app via require
+          // Electron environment: fs module is only available in desktop app
           const fs = require("fs") as { readFile: (path: string, callback: (err: NodeJS.ErrnoException | null, data: Buffer) => void) => void };
           const file = fileList[i] as string;
 

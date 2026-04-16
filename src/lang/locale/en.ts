@@ -9,7 +9,7 @@ export default {
   "Default uploader": "Default uploader",
   "PicGo server": "PicGo server upload route",
   "PicGo server desc":
-    "upload route, use PicList will be able to set picbed and config through query",
+    "Upload route. Use PicList to set picbed and config through query.",
   "Please input PicGo server": "Please input upload route",
   "PicGo delete server":
     "PicGo server delete route(you need to use PicList app)",
@@ -24,10 +24,10 @@ export default {
   "Please input image size suffix": "Please input image size suffix",
   "Error, could not delete": "Error, could not delete",
   "Please input PicGo-Core path, default using environment variables":
-    "Please input PicGo-Core path, default using environment variables",
+    "Please input PicGo-Core path (default: use environment variables)",
   "Work on network": "Work on network",
   "Work on network Description":
-    "Allow upload network image by 'Upload all' command.\n Or when you paste, md standard image link in your clipboard will be auto upload.",
+    "Allow uploading network images with the 'Upload all' command, or automatically upload when pasting markdown image links.",
   "Upload when clipboard has image and text together":
     "Upload when clipboard has both image and text",
   "When you copy, some application like Excel will image and text to clipboard, you can upload or not.":
@@ -52,7 +52,7 @@ export default {
   "File has been changedd, download failure":
     "File changed, download failed",
   "Warning: upload files is different of reciver files from api":
-    "Warning: upload files num is different of reciver files from api",
+    "Warning: number of uploaded files differs from received files",
   upload: "Upload",
   "No markdown files found in vault": "No markdown files found in vault",
   "Scanning markdown files, please wait": "Scanning markdown files, please wait",

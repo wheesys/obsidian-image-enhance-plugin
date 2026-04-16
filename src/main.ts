@@ -848,7 +848,6 @@ export default class imageEnhancePlugin extends Plugin {
                 sendFiles.push(item.path);
               } else {
                 // Electron specific API for getting file path from File object
-                // eslint-disable-next-line @typescript-eslint/no-var-requires -- Electron environment: electron module is only available in desktop app via require
                 const { webUtils } = require("electron") as { webUtils: { getPathForFile: (file: File) => string } };
                 const path = webUtils.getPathForFile(item);
                 sendFiles.push(path);
