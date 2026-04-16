@@ -21,7 +21,8 @@ import Helper from "./helper";
 import { t } from "./lang/helpers";
 import { SettingTab, PluginSettings, DEFAULT_SETTINGS } from "./setting";
 
-import type { Image } from "./types";
+import type { Image, FileWithFullPath } from "./types";
+import type { Response } from "./uploader/types";
 
 export default class imageEnhancePlugin extends Plugin {
   settings: PluginSettings;
@@ -74,7 +75,7 @@ export default class imageEnhancePlugin extends Plugin {
             console.debug("[ImageEnhance] Has MarkdownView, will execute");
             if (!checking) {
               console.debug("[ImageEnhance] Executing uploadAllFile NOW");
-              this.uploadAllFile();
+              void this.uploadAllFile();
             }
             return true;
           }
@@ -202,7 +203,7 @@ export default class imageEnhancePlugin extends Plugin {
                   this.settings.uploadedImages.filter(
                     (item: { imgUrl: string }) => item.imgUrl !== imgPath
                   );
-                this.saveSettings();
+                await this.saveSettings();
               } else {
                 new Notice(t("Delete failed"));
               }
@@ -227,7 +228,7 @@ export default class imageEnhancePlugin extends Plugin {
               .setTitle(t("upload"))
               .setIcon("upload")
               .onClick(() => {
-                this.fileMenuUpload(file);
+                void this.fileMenuUpload(file);
               });
           });
         }
@@ -334,7 +335,8 @@ export default class imageEnhancePlugin extends Plugin {
 
     if (this.settings.deleteSource) {
       imageList.forEach(image => {
-        if (image.file && !image.path.startsWith("http")) {
+        // Only delete real TFile objects, not virtual FileWithFullPath objects
+        if (image.file && !image.path.startsWith("http") && "vault" in image.file) {
           this.app.fileManager.trashFile(image.file);
         }
       });
@@ -354,7 +356,7 @@ export default class imageEnhancePlugin extends Plugin {
     const basePath = adapter.getBasePath?.() || "";
     console.debug("[ImageEnhance] Vault base path:", basePath);
 
-    let imageList: (Image & { file: TFile | null })[] = [];
+    let imageList: (Image & { file: TFile | FileWithFullPath | null })[] = [];
     const fileArray = this.filterFile(this.helper.getAllFiles());
 
     console.debug("[ImageEnhance] Parsed images from content:", fileArray.length);
@@ -395,13 +397,13 @@ export default class imageEnhancePlugin extends Plugin {
         console.debug("[ImageEnhance] Full file path:", fullPath);
 
         // 创建虚拟文件对象，同时保存相对路径和绝对路径
-        const file = {
+        const file: FileWithFullPath = {
           path: vaultRelativePath, // 相对路径，供 Obsidian API 使用
           name: fileName,
           extension: fileName.split('.').pop() || '',
           // 添加完整路径属性用于上传（使用绝对路径）
           fullPath: fullPath,
-        } as unknown as TFile;
+        };
 
         imageList.push({
           path: vaultRelativePath,
@@ -567,7 +569,8 @@ export default class imageEnhancePlugin extends Plugin {
         // 删除源文件
         if (this.settings.deleteSource) {
           imageList.forEach(image => {
-            if (image.file && !image.path.startsWith("http")) {
+            // Only delete real TFile objects, not virtual FileWithFullPath objects
+            if (image.file && !image.path.startsWith("http") && "vault" in image.file) {
               this.app.fileManager.trashFile(image.file);
             }
           });
@@ -798,14 +801,13 @@ export default class imageEnhancePlugin extends Plugin {
 
           // 剪贴板中是图片时进行上传
           if (this.canUpload(evt.clipboardData)) {
-            this.uploadFileAndEmbedImgurImage(
+            void this.uploadFileAndEmbedImgurImage(
               editor,
               async (editor: Editor, pasteId: string) => {
-                let res: any;
-                res = await this.uploadByClipboard(evt.clipboardData.files);
+                const res: Response = await this.uploadByClipboard(evt.clipboardData.files);
 
                 if (!res.success) {
-                  this.handleFailedUpload(editor, pasteId, res.msg);
+                  this.handleFailedUpload(editor, pasteId, res.msg ?? "Upload failed");
                   return;
                 }
                 const url = res.result[0];
@@ -813,7 +815,9 @@ export default class imageEnhancePlugin extends Plugin {
                 return url;
               },
               evt.clipboardData
-            ).catch();
+            ).catch((error: Error) => {
+              console.error("Upload failed:", error);
+            });
             evt.preventDefault();
           }
         }
@@ -844,7 +848,7 @@ export default class imageEnhancePlugin extends Plugin {
                 sendFiles.push(item.path);
               } else {
                 // Electron specific API for getting file path from File object
-                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                // eslint-disable-next-line @typescript-eslint/no-var-requires -- Electron environment: electron module is only available in desktop app via require
                 const { webUtils } = require("electron") as { webUtils: { getPathForFile: (file: File) => string } };
                 const path = webUtils.getPathForFile(item);
                 sendFiles.push(path);

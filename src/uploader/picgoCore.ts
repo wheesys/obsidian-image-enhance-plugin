@@ -93,6 +93,7 @@ export default class PicGoCoreUploader implements Uploader {
   }
 
   private async exec(command: string): Promise<string> {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires -- Electron environment: child_process is only available in desktop app via require
     const { exec } = require("child_process") as { exec: (cmd: string, callback: (error: Error | null, stdout: { [Symbol.asyncIterator](): AsyncIterator<Buffer> }) => void) => void };
     return new Promise((resolve, reject) => {
       exec(command, async (error, stdout) => {

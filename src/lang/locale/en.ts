@@ -2,7 +2,7 @@
 
 export default {
   // setting.ts
-  "Plugin Settings": "Plugin Settings",
+  "Plugin Settings": "Plugin settings",
   "Auto pasted upload": "Auto pasted upload",
   "If you set this value true, when you paste image, it will be auto uploaded(you should set the picGo server rightly)":
     "If you set this value true, when you paste image, it will be auto uploaded(you should set the picGo server rightly)",
@@ -29,28 +29,28 @@ export default {
   "Work on network Description":
     "Allow upload network image by 'Upload all' command.\n Or when you paste, md standard image link in your clipboard will be auto upload.",
   "Upload when clipboard has image and text together":
-    "Upload when clipboard has image and text together",
+    "Upload when clipboard has both image and text",
   "When you copy, some application like Excel will image and text to clipboard, you can upload or not.":
-    "When you copy, some application like Excel will image and text to clipboard, you can upload or not.",
-  "Network Domain Black List": "Network Domain Black List",
+    "When you copy, some applications like Excel put both image and text to clipboard. You can choose whether to upload.",
+  "Network Domain Black List": "Network domain blacklist",
   "Network Domain Black List Description":
-    "Image in the domain list will not be upload,use comma separated",
+    "Images in domains on this list will not be uploaded. Use comma to separate domains.",
   "Delete source file after you upload file":
-    "Delete source file after you upload file",
+    "Delete source file after upload",
   "Delete source file in ob assets after you upload file.":
-    "Delete source file in ob assets after you upload file.",
-  "Image desc": "Image desc",
+    "Delete source file in Obsidian assets after upload.",
+  "Image desc": "Image description",
   reserve: "default",
   "remove all": "none",
   "remove default": "remove image.png",
   "Remote server mode": "Remote server mode",
   "Remote server mode desc":
     "If you have deployed piclist-core or piclist on the server.",
-  "Can not find image file": "Can not find image file",
+  "Can not find image file": "Cannot find image file",
   "File has been changedd, upload failure":
-    "File has been changedd, upload failure",
+    "File changed, upload failed",
   "File has been changedd, download failure":
-    "File has been changedd, download failure",
+    "File changed, download failed",
   "Warning: upload files is different of reciver files from api":
     "Warning: upload files num is different of reciver files from api",
   upload: "Upload",
@@ -66,9 +66,9 @@ export default {
   "Scanning for unused images": "Scanning for unused images",
   "No unused images found": "No unused images found",
   "Found unused images": "Found unused images",
-  "Moving to trash": "Moving to trash",
+  "Moving to trash": "Moving to system trash",
   "Cleanup complete": "Cleanup complete",
-  "images moved to trash": "images moved to trash",
+  "images moved to trash": "images moved to system trash",
   "Scanning for broken image links": "Scanning for broken image links",
   "No broken image links found": "No broken image links found",
   "Broken links cleanup complete": "Broken links cleanup complete",

@@ -16,7 +16,7 @@ export async function streamToString(stream: ReadableStream): Promise<string> {
     chunks.push(Buffer.from(chunk));
   }
 
-  // @ts-ignore - Buffer.concat is available in Node.js/Electron environment
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- Buffer.concat accepts Buffer[] in Node.js/Electron environment
   return Buffer.concat(chunks).toString("utf-8");
 }
 

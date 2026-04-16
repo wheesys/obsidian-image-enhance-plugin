@@ -5,7 +5,7 @@ import { bufferToArrayBuffer } from "../utils";
 import { payloadGenerator } from "../payloadGenerator";
 
 import type imageEnhancePlugin from "../main";
-import type { Image } from "../types";
+import type { Image, FileWithFullPath } from "../types";
 import type { Response, Uploader } from "./types";
 import type { PluginSettings, UploadedImage } from "../setting";
 
@@ -33,7 +33,7 @@ export default class PicGoUploader implements Uploader {
       const files: File[] = [];
       for (let i = 0; i < fileList.length; i++) {
         if (typeof fileList[i] === "string") {
-          // Dynamic import for Electron environment
+          // eslint-disable-next-line @typescript-eslint/no-var-requires -- Electron environment: fs is only available in desktop app via require
           const fs = require("fs") as { readFile: (path: string, callback: (err: NodeJS.ErrnoException | null, data: Buffer) => void) => void };
           const file = fileList[i] as string;
 
@@ -72,8 +72,8 @@ export default class PicGoUploader implements Uploader {
         if (typeof item === "string") {
           return item;
         } else {
-          // fullPath is dynamically added property for upload purposes
-          const imagePath = (item.file as TFile & { fullPath?: string })?.fullPath || item.path;
+          // fullPath is available on FileWithFullPath objects for upload purposes
+          const imagePath = (item.file as FileWithFullPath)?.fullPath || item.path;
           return normalizePath(imagePath);
         }
       });
