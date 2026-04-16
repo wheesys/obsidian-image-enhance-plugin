@@ -12,15 +12,15 @@ export default {
     "Upload route. Use PicList to set picbed and config through query.",
   "Please input PicGo server": "Please input upload route",
   "PicGo delete server":
-    "PicGo server delete route(you need to use PicList app)",
-  "PicList desc": "Search PicList on Github to download and install",
+    "PicGo server delete route (you need to use PicList app)",
+  "PicList desc": "Search PicList on GitHub to download and install",
   "Please input PicGo delete server": "Please input delete server",
   "Delete image using PicList": "Delete image using PicList",
   "PicGo-Core path": "PicGo-Core path",
   "Delete successfully": "Delete successfully",
   "Delete failed": "Delete failed",
   "Image size suffix": "Image size suffix",
-  "Image size suffix Description": "like |300 for resize image in ob.",
+  "Image size suffix Description": "Like |300 for resize image in Obsidian.",
   "Please input image size suffix": "Please input image size suffix",
   "Error, could not delete": "Error, could not delete",
   "Please input PicGo-Core path, default using environment variables":
@@ -45,7 +45,7 @@ export default {
   "remove default": "remove image.png",
   "Remote server mode": "Remote server mode",
   "Remote server mode desc":
-    "If you have deployed piclist-core or piclist on the server.",
+    "If you have deployed PicList-Core or PicList on the server.",
   "Can not find image file": "Cannot find image file",
   "File has been changedd, upload failure":
     "File changed, upload failed",

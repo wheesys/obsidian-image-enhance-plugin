@@ -848,6 +848,9 @@ export default class imageEnhancePlugin extends Plugin {
                 sendFiles.push(item.path);
               } else {
                 // Electron specific API for getting file path from File object
+                if (typeof require === "undefined") {
+                  throw new Error("electron module is only available in desktop app");
+                }
                 const { webUtils } = require("electron") as { webUtils: { getPathForFile: (file: File) => string } };
                 const path = webUtils.getPathForFile(item);
                 sendFiles.push(path);
