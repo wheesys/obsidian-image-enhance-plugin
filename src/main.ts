@@ -20,6 +20,7 @@ import { PicGoDeleter } from "./deleter";
 import Helper from "./helper";
 import { t } from "./lang/helpers";
 import { SettingTab, PluginSettings, DEFAULT_SETTINGS } from "./setting";
+import { getElectron } from "./electronHelper";
 
 import type { Image, FileWithFullPath } from "./types";
 import type { Response } from "./uploader/types";
@@ -848,10 +849,7 @@ export default class imageEnhancePlugin extends Plugin {
                 sendFiles.push(item.path);
               } else {
                 // Electron specific API for getting file path from File object
-                if (typeof require === "undefined") {
-                  throw new Error("electron module is only available in desktop app");
-                }
-                const { webUtils } = require("electron") as { webUtils: { getPathForFile: (file: File) => string } };
+                const { webUtils } = getElectron() as { webUtils: { getPathForFile: (file: File) => string } };
                 const path = webUtils.getPathForFile(item);
                 sendFiles.push(path);
               }

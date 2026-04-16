@@ -2,6 +2,7 @@ import { join } from "path-browserify";
 
 import { streamToString, getLastImage } from "../utils";
 import { normalizePath, FileSystemAdapter } from "obsidian";
+import { getChildProcess } from "../electronHelper";
 
 import type imageEnhancePlugin from "../main";
 import type { Image } from "../types";
@@ -93,12 +94,7 @@ export default class PicGoCoreUploader implements Uploader {
   }
 
   private async exec(command: string): Promise<string> {
-    // Check if running in Electron environment where child_process is available
-    if (typeof require === "undefined") {
-      throw new Error("child_process module is only available in desktop app");
-    }
-    // Electron environment: child_process module is only available in desktop app
-    const { exec } = require("child_process") as { exec: (cmd: string, callback: (error: Error | null, stdout: { [Symbol.asyncIterator](): AsyncIterator<Buffer> }) => void) => void };
+    const { exec } = getChildProcess() as { exec: (cmd: string, callback: (error: Error | null, stdout: { [Symbol.asyncIterator](): AsyncIterator<Buffer> }) => void) => void };
     return new Promise((resolve, reject) => {
       exec(command, (error, stdout) => {
         if (error) {

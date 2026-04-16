@@ -3,6 +3,7 @@ import { requestUrl, normalizePath } from "obsidian";
 
 import { bufferToArrayBuffer } from "../utils";
 import { payloadGenerator } from "../payloadGenerator";
+import { getFs } from "../electronHelper";
 
 import type imageEnhancePlugin from "../main";
 import type { Image, FileWithFullPath } from "../types";
@@ -33,12 +34,7 @@ export default class PicGoUploader implements Uploader {
       const files: File[] = [];
       for (let i = 0; i < fileList.length; i++) {
         if (typeof fileList[i] === "string") {
-          // Check if running in Electron environment where fs is available
-          if (typeof require === "undefined") {
-            throw new Error("fs module is only available in desktop app");
-          }
-          // Electron environment: fs module is only available in desktop app
-          const fs = require("fs") as { readFile: (path: string, callback: (err: NodeJS.ErrnoException | null, data: Buffer) => void) => void };
+          const fs = getFs() as { readFile: (path: string, callback: (err: NodeJS.ErrnoException | null, data: Buffer) => void) => void };
           const file = fileList[i] as string;
 
           const buffer: Buffer = await new Promise((resolve, reject) => {
