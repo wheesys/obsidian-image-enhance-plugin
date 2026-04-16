@@ -24,6 +24,7 @@
   "ignorePatterns": [
     "node_modules/",
     "main.js",
-    "*/types.ts"
+    "*/types.ts",
+    "src/electronHelper.ts"
   ]
 }

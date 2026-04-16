@@ -3,7 +3,7 @@
 export default {
   // setting.ts
   "Plugin Settings": "Plugin settings",
-  "Auto pasted upload": "Auto pasted upload",
+  "Auto pasted upload": "Auto paste",
   "If you set this value true, when you paste image, it will be auto uploaded(you should set the picGo server rightly)":
     "If you set this value true, when you paste image, it will be auto uploaded(you should set the picGo server rightly)",
   "Default uploader": "Default uploader",
@@ -13,9 +13,9 @@ export default {
   "Please input PicGo server": "Please input upload route",
   "PicGo delete server":
     "PicGo server delete route (you need to use PicList app)",
-  "PicList desc": "Search PicList on GitHub to download and install",
+  "PicList desc": "Search Piclist on GitHub to download and install",
   "Please input PicGo delete server": "Please input delete server",
-  "Delete image using PicList": "Delete image using PicList",
+  "Delete image using PicList": "Delete image using Piclist",
   "PicGo-Core path": "PicGo-core path",
   "Delete successfully": "Delete successfully",
   "Delete failed": "Delete failed",
@@ -29,16 +29,16 @@ export default {
   "Work on network Description":
     "Allow uploading network images with the 'Upload all' command, or automatically upload when pasting markdown image links.",
   "Upload when clipboard has image and text together":
-    "Upload when clipboard has both image and text",
+    "Upload when clipboard has image and text",
   "When you copy, some application like Excel will image and text to clipboard, you can upload or not.":
     "When you copy, some applications like Excel put both image and text to clipboard. You can choose whether to upload.",
   "Network Domain Black List": "Network domain blacklist",
   "Network Domain Black List Description":
     "Images in domains on this list will not be uploaded. Use comma to separate domains.",
   "Delete source file after you upload file":
-    "Delete source file after upload",
+    "Delete source after upload",
   "Delete source file in ob assets after you upload file.":
-    "Delete source file in Obsidian assets after upload.",
+    "Delete source in Obsidian assets after upload.",
   "Image desc": "Image description",
   reserve: "Default",
   "remove all": "None",
