@@ -27,7 +27,7 @@ export class UploaderManager {
     this.uploader = new Uploader(this.plugin);
   }
 
-  async upload(fileList: Array<string> | Array<Image>) {
+  async upload(fileList: Array<string> | Array<Image> | Array<File>) {
     if (Platform.isMobileApp && !this.plugin.settings.remoteServerMode) {
       new Notice("Mobile App must use remote server mode.");
       throw new Error("Mobile App must use remote server mode.");

@@ -1,9 +1,7 @@
 import { extname } from "path-browserify";
 import { requestUrl, normalizePath } from "obsidian";
 
-import { bufferToArrayBuffer } from "../utils";
 import { payloadGenerator } from "../payloadGenerator";
-import { getFs } from "../electronHelper";
 
 import type imageEnhancePlugin from "../main";
 import type { Image, FileWithFullPath } from "../types";
@@ -27,30 +25,22 @@ export default class PicGoUploader implements Uploader {
     this.plugin = plugin;
   }
 
-  private async uploadFiles(fileList: Array<Image | string>) {
+  private async uploadFiles(fileList: Array<Image | string | File>) {
     let response: Awaited<ReturnType<typeof requestUrl>>;
 
     if (this.settings.remoteServerMode) {
       const files: File[] = [];
-      for (let i = 0; i < fileList.length; i++) {
-        if (typeof fileList[i] === "string") {
-          const fs = getFs() as { readFile: (path: string, callback: (err: NodeJS.ErrnoException | null, data: Buffer) => void) => void };
-          const file = fileList[i] as string;
-
-          const buffer: Buffer = await new Promise((resolve, reject) => {
-            fs.readFile(file, (err, data) => {
-              if (err) {
-                reject(err);
-              } else {
-                resolve(data);
-              }
-            });
-          });
-          const arrayBuffer = bufferToArrayBuffer(buffer);
-          files.push(new File([arrayBuffer], file));
+      for (const item of fileList) {
+        if (item instanceof File) {
+          // Direct File object (from drag-drop)
+          files.push(item);
+        } else if (typeof item === "string") {
+          // String path - skip as we cannot read arbitrary paths without fs module
+          continue;
         } else {
+          // Image object from vault
           const timestamp = Date.now();
-          const image = fileList[i] as Image;
+          const image: Image = item;
 
           if (!image.file) continue;
           const arrayBuffer = await this.plugin.app.vault.adapter.readBinary(
@@ -67,12 +57,23 @@ export default class PicGoUploader implements Uploader {
       const list = fileList.map(item => {
         if (typeof item === "string") {
           return item;
+        } else if (item instanceof File) {
+          // File objects not supported in local server mode
+          return "";
         } else {
           // fullPath is available on FileWithFullPath objects for upload purposes
           const imagePath = (item.file as FileWithFullPath)?.fullPath || item.path;
           return normalizePath(imagePath);
         }
-      });
+      }).filter(p => p.length > 0);
+
+      if (list.length === 0) {
+        return {
+          success: false,
+          msg: "No valid files to upload",
+          result: [],
+        };
+      }
 
       response = await requestUrl({
         url: this.settings.uploadServer,
@@ -178,7 +179,7 @@ export default class PicGoUploader implements Uploader {
     };
   }
 
-  async upload(fileList: Array<Image> | Array<string>) {
+  async upload(fileList: Array<Image> | Array<string> | Array<File>) {
     return this.uploadFiles(fileList);
   }
   async uploadByClipboard(fileList?: FileList) {

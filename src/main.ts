@@ -20,7 +20,6 @@ import { PicGoDeleter } from "./deleter";
 import Helper from "./helper";
 import { t } from "./lang/helpers";
 import { SettingTab, PluginSettings, DEFAULT_SETTINGS } from "./setting";
-import { getElectron } from "./electronHelper";
 
 import type { Image, FileWithFullPath } from "./types";
 import type { Response } from "./uploader/types";
@@ -141,7 +140,7 @@ export default class imageEnhancePlugin extends Plugin {
   /**
    * 上传图片
    */
-  upload(images: Image[] | string[]) {
+  upload(images: Image[] | string[] | File[]) {
     const uploader = this.getUploader();
     return uploader.upload(images);
   }
@@ -843,20 +842,11 @@ export default class imageEnhancePlugin extends Plugin {
 
           const files = evt.dataTransfer.files;
           if (files.length !== 0 && files[0].type.startsWith("image")) {
-            const sendFiles: Array<string> = [];
-            Array.from(files).forEach((item, _index) => {
-              if (item.path) {
-                sendFiles.push(item.path);
-              } else {
-                // Electron specific API for getting file path from File object
-                const { webUtils } = getElectron() as { webUtils: { getPathForFile: (file: File) => string } };
-                const path = webUtils.getPathForFile(item);
-                sendFiles.push(path);
-              }
-            });
             evt.preventDefault();
 
-            const data = await this.upload(sendFiles);
+            // Pass File objects directly instead of converting to paths
+            const fileArray = Array.from(files);
+            const data = await this.upload(fileArray);
 
             if (data.success) {
               data.result.map((value: string) => {

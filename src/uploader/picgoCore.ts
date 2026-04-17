@@ -18,18 +18,31 @@ export default class PicGoCoreUploader implements Uploader {
     this.plugin = plugin;
   }
 
-  private async uploadFiles(fileList: Array<Image> | Array<string>) {
+  private async uploadFiles(fileList: Array<Image> | Array<string> | Array<File>) {
     const basePath = (
       this.plugin.app.vault.adapter as FileSystemAdapter
     ).getBasePath();
 
-    const list = fileList.map(item => {
+    const list: string[] = [];
+    for (const item of fileList) {
       if (typeof item === "string") {
-        return item;
+        list.push(item);
+      } else if (item instanceof File) {
+        // File objects from drag-drop don't have accessible paths without electron module
+        // Skip these files as PicGo-Core requires file paths for command line execution
+        continue;
       } else {
-        return normalizePath(join(basePath, item.path));
+        list.push(normalizePath(join(basePath, item.path)));
       }
-    });
+    }
+
+    if (list.length === 0) {
+      return {
+        success: false,
+        msg: "No valid files to upload. PicGo-Core uploader requires vault files with paths.",
+        result: [] as string[],
+      };
+    }
 
     const length = list.length;
     const cli = this.settings.picgoCorePath || "picgo";
@@ -106,7 +119,7 @@ export default class PicGoCoreUploader implements Uploader {
     });
   }
 
-  async upload(fileList: Array<Image> | Array<string>) {
+  async upload(fileList: Array<Image> | Array<string> | Array<File>) {
     return this.uploadFiles(fileList);
   }
   async uploadByClipboard(fileList?: FileList) {

@@ -13,9 +13,9 @@ export default {
   "Please input PicGo server": "Please input upload route",
   "PicGo delete server":
     "PicGo server delete route (you need to use PicList app)",
-  "PicList desc": "Search Piclist on GitHub to download and install",
+  "PicList desc": "Search PicList on GitHub to download and install",
   "Please input PicGo delete server": "Please input delete server",
-  "Delete image using PicList": "Delete image using Piclist",
+  "Delete image using PicList": "Delete image using PicList",
   "PicGo-Core path": "PicGo-core path",
   "Delete successfully": "Delete successfully",
   "Delete failed": "Delete failed",
