@@ -1,5 +1,5 @@
 import { extname } from "path-browserify";
-import { requestUrl, normalizePath } from "obsidian";
+import { requestUrl, normalizePath, TFile } from "obsidian";
 
 import { payloadGenerator } from "../payloadGenerator";
 
@@ -43,12 +43,11 @@ export default class PicGoUploader implements Uploader {
           const image: Image = item;
 
           if (!image.file) continue;
-          const arrayBuffer = await this.plugin.app.vault.adapter.readBinary(
-            image.file.path
-          );
+          // 直接使用 TFile 对象读取，无需关心路径格式
+          const arrayBuffer = await this.plugin.app.vault.readBinary(image.file as TFile);
 
           files.push(
-            new File([arrayBuffer], timestamp + extname(image.file.path))
+            new File([arrayBuffer], timestamp + extname(image.file.name))
           );
         }
       }

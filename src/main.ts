@@ -347,25 +347,18 @@ export default class imageEnhancePlugin extends Plugin {
    * 上传所有图片
    */
   uploadAllFile() {
-    console.debug("[ImageEnhance] uploadAllFile called!");
     const activeFile = this.app.workspace.getActiveFile();
-    console.debug("[ImageEnhance] Current file:", activeFile?.path);
 
-    // 获取 vault 的基础路径
+    // 获取 vault 基础路径，用于处理绝对路径情况
     const adapter = this.app.vault.adapter as FileSystemAdapter & { getBasePath?: () => string };
     const basePath = adapter.getBasePath?.() || "";
-    console.debug("[ImageEnhance] Vault base path:", basePath);
 
-    const imageList: (Image & { file: TFile | FileWithFullPath | null })[] = [];
+    const imageList: (Image & { file: TFile | null })[] = [];
     const fileArray = this.filterFile(this.helper.getAllFiles());
-
-    console.debug("[ImageEnhance] Parsed images from content:", fileArray.length);
 
     for (const match of fileArray) {
       const imageName = match.name;
       const uri = decodeURI(match.path);
-
-      console.debug("[ImageEnhance] Processing image:", { uri, imageName });
 
       if (uri.startsWith("http")) {
         imageList.push({
@@ -375,47 +368,51 @@ export default class imageEnhancePlugin extends Plugin {
           file: null,
         });
       } else {
-        const fileName = basename(uri);
         let vaultRelativePath: string;
 
-        // Wiki 链接路径处理：
-        // 以 ./ 或 ../ 开头的是相对于当前文件
-        // 否则是相对于 vault 根目录
-        if (uri.startsWith("./") || uri.startsWith("../")) {
-          // 相对路径
-          vaultRelativePath = normalizePath(resolve(dirname(activeFile.path), uri));
+        // 检查 activeFile.path 是否是绝对路径
+        const activeFilePath = activeFile.path;
+        let activeFileDir: string;
+
+        if (activeFilePath.startsWith("/") || activeFilePath.match(/^[A-Za-z]:/)) {
+          // 绝对路径：需要转换为相对于 vault 的路径
+          if (basePath && activeFilePath.startsWith(basePath)) {
+            const relativePath = activeFilePath.slice(basePath.length).replace(/^\//, "");
+            activeFileDir = dirname(relativePath);
+          } else {
+            // 无法转换，跳过
+            continue;
+          }
         } else {
-          // 绝对路径（相对于 vault 根目录）
-          vaultRelativePath = normalizePath(uri);
+          // 已经是相对路径
+          activeFileDir = dirname(activeFilePath);
         }
 
-        // 拼接完整绝对路径（确保以 / 开头）
-        let fullPath = basePath ? normalizePath(join(basePath, vaultRelativePath)) : vaultRelativePath;
-        if (!fullPath.startsWith("/")) {
-          fullPath = "/" + fullPath;
+        if (uri.startsWith("/")) {
+          // 以 / 开头，相对于 vault 根目录
+          vaultRelativePath = normalizePath(uri.slice(1));
+        } else {
+          // 相对于当前文件所在目录（使用简单的路径拼接，避免 path-browserify 的 resolve 问题）
+          if (activeFileDir === ".") {
+            vaultRelativePath = normalizePath(uri);
+          } else {
+            vaultRelativePath = normalizePath(activeFileDir + "/" + uri);
+          }
         }
-        console.debug("[ImageEnhance] Full file path:", fullPath);
 
-        // 创建虚拟文件对象，同时保存相对路径和绝对路径
-        const file: FileWithFullPath = {
-          path: vaultRelativePath, // 相对路径，供 Obsidian API 使用
-          name: fileName,
-          extension: fileName.split('.').pop() || '',
-          // 添加完整路径属性用于上传（使用绝对路径）
-          fullPath: fullPath,
-        };
+        // 使用 Obsidian API 获取文件对象
+        const file = this.app.vault.getAbstractFileByPath(vaultRelativePath);
 
-        imageList.push({
-          path: vaultRelativePath,
-          name: imageName,
-          source: match.source,
-          file: file,
-        });
-        console.debug("[ImageEnhance] Added image to list:", vaultRelativePath);
+        if (file && file instanceof TFile && isAssetTypeAnImage(file.path)) {
+          imageList.push({
+            path: vaultRelativePath,
+            name: imageName,
+            source: match.source,
+            file: file,
+          });
+        }
       }
     }
-
-    console.debug("[ImageEnhance] Final image list:", imageList.length);
 
     if (imageList.length === 0) {
       new Notice(t("Can not find image file"));
