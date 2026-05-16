@@ -118,7 +118,7 @@ image-enhance: true
 
 ### macOS 下无法上传
 
-参考 [#160](https://github.com/renmu123/obsidian-image-enhance-plugin/issues/160)、[#20](https://github.com/renmu123/obsidian-image-enhance-plugin/issues/20)
+参考 [#160](https://github.com/wheesys/obsidian-image-enhance-plugin/issues/160)、[#20](https://github.com/wheesys/obsidian-image-enhance-plugin/issues/20)
 
 ---
 

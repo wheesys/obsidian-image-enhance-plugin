@@ -760,6 +760,10 @@ export default class imageEnhancePlugin extends Plugin {
       this.app.workspace.on(
         "editor-paste",
         (evt: ClipboardEvent, editor: Editor, _markdownView: MarkdownView) => {
+          if (evt.defaultPrevented) {
+            return;
+          }
+
           const allowUpload = this.helper.getFrontmatterValue(
             "image-enhance",
             this.settings.uploadByClipSwitch
@@ -824,6 +828,10 @@ export default class imageEnhancePlugin extends Plugin {
       this.app.workspace.on(
         "editor-drop",
         async (evt: DragEvent, editor: Editor, _markdownView: MarkdownView) => {
+          if (evt.defaultPrevented) {
+            return;
+          }
+
           // when ctrl key is pressed, do not upload image, because it is used to set local file
           if (evt.ctrlKey) {
             return;

@@ -2,7 +2,7 @@
   "name": "image-enhance",
   "version": "1.0.4",
   "type": "module",
-  "description": "This plugin uploads images from your clipboard by picGo and embeds uploaded image to your note",
+  "description": "Upload images to remote hosts via PicGo, PicList or PicGo-Core. Automatically converts pasted images into hosted links with batch upload, download, and cleanup features.",
   "main": "main.js",
   "scripts": {
     "dev": "rollup --config rollup.config.js -w",

@@ -3,7 +3,7 @@
   "name": "image enhance",
   "version": "1.0.4",
   "minAppVersion": "0.10.7",
-  "description": "image enhance, about up(by picgo)/down/clean.",
+  "description": "Upload images to remote hosts via PicGo, PicList or PicGo-Core. Automatically converts pasted images into hosted links with batch upload, download, and cleanup features.",
   "author": "walle",
   "authorUrl": "https://github.com/wheesys",
   "isDesktopOnly": false

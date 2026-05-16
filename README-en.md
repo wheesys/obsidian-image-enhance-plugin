@@ -32,7 +32,7 @@ You can set `image-enhance: false` in `frontmatter` to control one file.
 
 Supports ".png", ".jpg", ".jpeg", ".bmp", ".gif", ".svg", ".tiff", ".webp", ".avif"
 
-Due to the [bug](https://github.com/renmu123/obsidian-image-enhance-plugin/issues/2) in PicGo 2.3.0-beta7, you cannot use this feature. Please install another version of PicGo.
+Due to the [bug](https://github.com/wheesys/obsidian-image-enhance-plugin/issues/2) in PicGo 2.3.0-beta7, you cannot use this feature. Please install another version of PicGo.
 
 ```yaml
 ---
