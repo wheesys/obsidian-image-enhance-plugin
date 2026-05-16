@@ -11,7 +11,7 @@ import {
   MarkdownFileInfo,
   FileSystemAdapter,
 } from "obsidian";
-import { resolve, basename, dirname, join } from "path-browserify";
+import { resolve, basename, dirname } from "path-browserify";
 
 import { isAssetTypeAnImage, arrayToObject } from "./utils";
 import { downloadAllImageFiles } from "./download";
@@ -21,7 +21,7 @@ import Helper from "./helper";
 import { t } from "./lang/helpers";
 import { SettingTab, PluginSettings, DEFAULT_SETTINGS } from "./setting";
 
-import type { Image, FileWithFullPath } from "./types";
+import type { Image } from "./types";
 import type { Response } from "./uploader/types";
 
 export default class imageEnhancePlugin extends Plugin {
