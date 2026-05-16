@@ -22,6 +22,18 @@ Example: `http://127.0.0.1:36677/upload?picbed=smms&configName=piclist`
 This will upload the image to the `smms` picbed and use the piclist configName.
 Using this feature, you can upload images to different picbeds in different Obsidian vaults.
 
+# Commands
+
+The plugin provides the following commands (press `Ctrl+P` / `Cmd+P` to open the command palette and search):
+
+| Command ID | Command Name | Description |
+|------------|--------------|-------------|
+| `Upload all images` | Upload all images | Upload all images in the current file to image bed |
+| `Upload all images in vault` | Upload all images in vault | Scan the entire vault and upload all images from Markdown files |
+| `Download all images` | Download all images | Download all network images in the current file to local storage |
+| `Clean unused images` | Clean unused images | Scan and delete unused image files in the vault (move to trash) |
+| `Delete broken image links` | Delete broken image links | Delete all links pointing to non-existent images in notes |
+
 # Features
 
 ## Upload when paste image
